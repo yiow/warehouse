@@ -96,9 +96,4 @@ document.addEventListener('DOMContentLoaded', function() {
     alert('请联系系统管理员重置密码');
   });
 
-  // 注册链接处理
-  document.querySelector('.register-link a').addEventListener('click', function(e) {
-    e.preventDefault();
-    alert('请联系系统管理员创建新账户');
-  });
 });

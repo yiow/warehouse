@@ -48,6 +48,33 @@ def login():
                 return jsonify({'success': False, 'message': '用户名不存在'}), 404  
     except pymysql.Error as e:
         return jsonify({'success': False, 'message': f'数据库错误：{str(e)}'}), 500
+    
+@app.route('/register',methods=['GET'])
+def show_register():
+    return render_template('register.html')
+@app.route('/register',methods=['POST'])
+def register():
+    data=request.get_json()
+    userType=data.get('userType')
+    username=data.get('username')
+    phone=data.get('phone')
+    password=data.get('password')
+    try:
+        with g.db.cursor() as cursor:
+            if userType=='customer':
+                check_sql="SELECT 1 FROM customers WHERE Customer_UserName=%s"
+                insert_sql="INSERT customers(Customer_UserName,Customer_Phone,Password) VALUES(%s,%s,%s)"
+            if userType=='supplier':
+                check_sql="SELECT 1 FROM supplier WHERE Supplier_UserName=%s"
+                insert_sql="INSERT suppliers(Supplier_UserName,Supplier_Phone,Password) VALUES(%s,%s,%s)"
+            cursor.execute(check_sql,(username,))
+            if cursor.fetchone():
+                return jsonify({'success':False,'message':'用户名重复'}),409
+            cursor.execute(insert_sql,(username,phone,password))
+            g.db.commit()
+            return jsonify({'success':True})
+    except pymysql.Error as e:
+        return jsonify({'success': False, 'message': f'数据库错误：{str(e)}'}), 500
 
 @app.route('/customer/dashboard')
 def customer():
