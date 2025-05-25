@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>仓库管理系统 - 客户中心</title>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/customer_dashboard.css')}}">
+</head>
+<body>
+<!-- 头部导航 -->
+<header class="header">
+    <div class="nav-container">
+        <div class="logo">仓库管理系统</div>
+        <div class="nav-right">
+            <!-- 查看订单按钮 -->
+            <button class="nav-btn" onclick="window.location.href='/orders'">查看订单</button>
+
+            <!-- 购物车图标 -->
+            <div class="cart-icon" onclick="toggleCart()">
+                🛒
+                <span class="cart-count" id="cartCount">0</span>
+            </div>
+
+            <!-- 用户信息和退出按钮 -->
+            <div class="user-info">
+                <span>欢迎，客户用户</span>
+                <button class="logout-btn" onclick="logout()">退出登录</button>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+    <!-- 主内容区 -->
+    <main class="main-container">
+        <h1 class="page-title">商品中心</h1>
+        
+        <!-- 搜索和筛选 -->
+        <div class="search-filter">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="搜索商品..." onkeyup="searchProducts()">
+            </div>
+            <div class="category-filter">
+                <select id="categoryFilter" onchange="filterByCategory()">
+                    <option value="">所有分类</option>
+                    <option value="电子产品">电子产品</option>
+                    <option value="办公用品">办公用品</option>
+                    <option value="家居用品">家居用品</option>
+                    <option value="工具设备">工具设备</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 商品网格 -->
+        <div class="products-grid" id="productsGrid">
+            <!-- 商品卡片将通过JavaScript动态生成 -->
+        </div>
+    </main>
+
+    <!-- 购物车侧边栏 -->
+    <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h2 class="cart-title">购物车</h2>
+            <button class="cart-close" onclick="closeCart()">×</button>
+        </div>
+        <div class="cart-content">
+            <div id="cart">
+                <!-- 购物车商品将通过JavaScript动态生成 -->
+            </div>
+            <div class="cart-summary" id="cartSummary" style="display: none;">
+                <div class="total-price" id="totalPrice">总计: ¥0.00</div>
+                <button class="checkout-btn" onclick="showCheckoutModal()">立即结算</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 订单确认模态框 -->
+    <div class="modal" id="checkoutModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">确认订单</h2>
+                <button class="modal-close" onclick="closeCheckoutModal()">×</button>
+            </div>
+            <div class="order-summary" id="orderSummary">
+                <!-- 订单详情将通过JavaScript动态生成 -->
+            </div>
+            <button class="confirm-btn" onclick="confirmOrder()">确认下单</button>
+        </div>
+    </div>
+    <script src="{{url_for('static',filename='js/customer_dashboard.js')}}"></script>
+
+</body>
+</html>

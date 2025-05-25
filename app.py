@@ -19,7 +19,7 @@ def teardown_request(exception):
     db=getattr(g,'db',None)
     if db is not None:
         db.close()
-
+#登陆
 @app.route('/login',methods=['GET'])
 def show_login():
     return render_template('login.html')
@@ -48,7 +48,7 @@ def login():
                 return jsonify({'success': False, 'message': '用户名不存在'}), 404  
     except pymysql.Error as e:
         return jsonify({'success': False, 'message': f'数据库错误：{str(e)}'}), 500
-    
+#注册   
 @app.route('/register',methods=['GET'])
 def show_register():
     return render_template('register.html')
@@ -78,7 +78,30 @@ def register():
 
 @app.route('/customer/dashboard')
 def customer():
-    return render_template('customer.html')
+    return render_template('customer_dashboard.html')
+#获取商品数据
+@app.route('/products',methods=['GET'])
+def get_products():
+    try:
+        with g.db.cursor() as cursor:
+            sql="SELECT Good_Num AS id,Good_Name AS name,Good_Price AS price,Good_Quantity AS stock,description,category,image FROM goods" 
+            cursor.execute(sql)
+            products=cursor.fetchall()
+            for row in products:
+                category= row['category']
+                row['image'] = {
+                    '电子产品': '💻',
+                    '办公用品': '📁',
+                    '家居用品': '☕',
+                    '工具设备': '🔧'
+                }.get(category, '📦')
+            print(products)
+            return jsonify(products)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+
+
 @app.route('/supplier/dashboard')
 def supplier():
     return render_template('supplier.html')
