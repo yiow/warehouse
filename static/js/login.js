@@ -19,15 +19,62 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let hasError = false;
     
-    // 验证用户类型
+    // 验证用户类型是否为空
     if (userType.selectedIndex === 0) {
         userTypeError.textContent = '请选择用户类型';
         userTypeError.style.display = 'block';
         hasError = true;
     }
-
+    // 验证用户名和密码是否为空
+    if (username.value.trim() === '') {
+        usernameError.textContent = '请输入用户名';
+        usernameError.style.display = 'block';
+        hasError = true;
+    }
+    if (password.value.trim() === '') {
+        passwordError.textContent = '请输入密码';
+        passwordError.style.display = 'block';
+        hasError = true;
+    }
     if (!hasError) {
-        alert("成功进入系统，即将跳转下一页面");
+      // 发送数据到后端
+      fetch('/login',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+        },
+        body:JSON.stringify({
+          userType:userType.value,
+          username:username.value,
+          password:password.value
+        })
+      })
+      .then(response => response.json())
+      .then(data =>{
+        if (data.success){
+          alert("登陆成功，即将跳转");
+          const type=userType.value;
+          if (type=='customer'){
+            window.location.href = '/customer/dashboard';
+          }
+          if (type=='staff'){
+            window.location.href = '/staff/dashboard';
+          }
+          if (type=='supplier'){
+            window.location.href = '/supplier/dashboard';
+          }
+        }
+        else{
+          //显示错误信息
+          if (data.message){
+            alert(data.message);
+          }
+        }
+      })
+      .catch(error =>{
+        console.error('Error:',error);
+        alert('登陆过程中发生错误');
+      });
     }
   });
 
