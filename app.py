@@ -19,6 +19,11 @@ def teardown_request(exception):
     db=getattr(g,'db',None)
     if db is not None:
         db.close()
+#主路由
+@app.route('/')
+def home(){
+    return 1
+}
 #登陆
 @app.route('/login',methods=['GET'])
 def show_login():
