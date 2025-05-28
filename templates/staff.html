@@ -3,1569 +3,600 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>仓库管理系统 - 管理员后台</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Microsoft YaHei', Arial, sans-serif;
-            background: #f8fafc;
-            color: #2d3748;
-        }
-
-        /* 侧边导航栏 */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 250px;
-            height: 100vh;
-            background: linear-gradient(180deg, #1a202c 0%, #2d3748 100%);
-            color: white;
-            z-index: 1000;
-            transition: all 0.3s ease;
-            overflow-y: auto;
-        }
-
-        .sidebar.collapsed {
-            width: 70px;
-        }
-
-        .sidebar-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid #4a5568;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .sidebar-logo {
-            font-size: 1.5em;
-            font-weight: bold;
-        }
-
-        .sidebar.collapsed .sidebar-logo {
-            display: none;
-        }
-
-        .sidebar-toggle {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.2em;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar-toggle:hover {
-            background: rgba(255,255,255,0.1);
-        }
-
-        .sidebar-nav {
-            padding: 1rem 0;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 1rem 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
-        }
-
-        .nav-item:hover {
-            background: rgba(255,255,255,0.1);
-            border-left-color: #4299e1;
-        }
-
-        .nav-item.active {
-            background: rgba(66, 153, 225, 0.2);
-            border-left-color: #4299e1;
-        }
-
-        .nav-icon {
-            width: 20px;
-            text-align: center;
-            margin-right: 1rem;
-            font-size: 1.1em;
-        }
-
-        .sidebar.collapsed .nav-text {
-            display: none;
-        }
-
-        /* 主内容区 */
-        .main-content {
-            margin-left: 250px;
-            min-height: 100vh;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar.collapsed + .main-content {
-            margin-left: 70px;
-        }
-
-        .top-bar {
-            background: white;
-            padding: 1rem 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .page-title {
-            font-size: 1.8em;
-            font-weight: 600;
-            color: #2d3748;
-        }
-
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .notification-btn {
-            position: relative;
-            background: none;
-            border: none;
-            font-size: 1.2em;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .notification-btn:hover {
-            background: #f7fafc;
-        }
-
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #e53e3e;
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: bold;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-
-        .logout-btn {
-            background: #e53e3e;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .logout-btn:hover {
-            background: #c53030;
-        }
-
-        .content-area {
-            padding: 2rem;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* 统计卡片 */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border-left: 4px solid #4299e1;
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-
-        .stat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .stat-title {
-            color: #718096;
-            font-size: 0.9em;
-            font-weight: 500;
-        }
-
-        .stat-icon {
-            font-size: 2em;
-            opacity: 0.7;
-        }
-
-        .stat-number {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #2d3748;
-        }
-
-        /* 表格样式 */
-        .data-table {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            overflow: hidden;
-            margin-bottom: 2rem;
-        }
-
-        .table-header {
-            padding: 1.5rem;
-            background: #f7fafc;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .table-title {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: #2d3748;
-        }
-
-        .table-actions {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .search-box {
-            position: relative;
-        }
-
-        .search-box input {
-            padding: 0.75rem 1rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            width: 250px;
-        }
-
-        .search-box input:focus {
-            outline: none;
-            border-color: #4299e1;
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(66, 153, 225, 0.3);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-            color: white;
-        }
-
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
-            color: white;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
-            color: white;
-        }
-
-        .btn-sm {
-            padding: 0.5rem 1rem;
-            font-size: 0.8rem;
-        }
-
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        th {
-            background: #f7fafc;
-            font-weight: 600;
-            color: #4a5568;
-        }
-
-        tr:hover {
-            background: #f7fafc;
-        }
-
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-
-        .status-active {
-            background: #c6f6d5;
-            color: #22543d;
-        }
-
-        .status-inactive {
-            background: #fed7d7;
-            color: #742a2a;
-        }
-
-        .status-pending {
-            background: #fbd38d;
-            color: #9c4221;
-        }
-
-        .status-completed {
-            background: #bee3f8;
-            color: #2a4365;
-        }
-
-        /* 预警样式 */
-        .alert-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 1rem;
-            overflow: hidden;
-        }
-
-        .alert-critical {
-            border-left: 4px solid #e53e3e;
-        }
-
-        .alert-warning {
-            border-left: 4px solid #ed8936;
-        }
-
-        .alert-info {
-            border-left: 4px solid #4299e1;
-        }
-
-        .alert-content {
-            padding: 1.5rem;
-        }
-
-        .alert-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .alert-title {
-            font-weight: 600;
-            color: #2d3748;
-        }
-
-        .alert-time {
-            color: #718096;
-            font-size: 0.9em;
-        }
-
-        /* 模态框 */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .modal.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            max-width: 800px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .modal-title {
-            font-size: 1.5em;
-            font-weight: 600;
-            color: #2d3748;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5em;
-            cursor: pointer;
-            color: #999;
-            padding: 0.5rem;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-
-        .modal-close:hover {
-            background: #f7fafc;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #4a5568;
-            font-weight: 500;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #4299e1;
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            padding-top: 1rem;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                transform: translateX(-100%);
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .table-header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .table-actions {
-                flex-direction: column;
-            }
-
-            .search-box input {
-                width: 100%;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #718096;
-        }
-
-        .empty-state svg {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 1rem;
-            opacity: 0.3;
-        }
-
-        /* 流水记录样式 */
-        .transaction-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background: white;
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .transaction-type {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2em;
-            font-weight: bold;
-        }
-
-        .transaction-in {
-            background: #c6f6d5;
-            color: #22543d;
-        }
-
-        .transaction-out {
-            background: #fed7d7;
-            color: #742a2a;
-        }
-
-        .transaction-info {
-            flex: 1;
-        }
-
-        .transaction-title {
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 0.25rem;
-        }
-
-        .transaction-details {
-            color: #718096;
-            font-size: 0.9em;
-        }
-
-        .transaction-amount {
-            text-align: right;
-        }
-
-        .transaction-quantity {
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-
-        .transaction-time {
-            color: #718096;
-            font-size: 0.8em;
-        }
-    </style>
+    <title>仓库管理系统 - 管理员</title>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/staff.css')}}">
 </head>
 <body>
-    <!-- 侧边导航栏 -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
-            <div class="sidebar-logo">管理后台</div>
-        </div>
-        <nav class="sidebar-nav">
-            <div class="nav-item active" onclick="switchTab('dashboard')">
-                <span class="nav-icon">📊</span>
-                <span class="nav-text">仪表盘</span>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="logo">
+                🏭 仓库管理系统
             </div>
-            <div class="nav-item" onclick="switchTab('users')">
-                <span class="nav-icon">👥</span>
-                <span class="nav-text">用户管理</span>
-            </div>
-            <div class="nav-item" onclick="switchTab('inventory')">
-                <span class="nav-icon">📦</span>
-                <span class="nav-text">库存管理</span>
-            </div>
-            <div class="nav-item" onclick="switchTab('transactions')">
-                <span class="nav-icon">📋</span>
-                <span class="nav-text">出入库流水</span>
-            </div>
-            <div class="nav-item" onclick="switchTab('alerts')">
-                <span class="nav-icon">⚠️</span>
-                <span class="nav-text">库存预警</span>
-            </div>
-            <div class="nav-item" onclick="switchTab('supply')">
-                <span class="nav-icon">📄</span>
-                <span class="nav-text">供货管理</span>
-            </div>
-            <div class="nav-item" onclick="switchTab('reports')">
-                <span class="nav-icon">📈</span>
-                <span class="nav-text">报表分析</span>
-            </div>
-        </nav>
-    </div>
-
-    <!-- 主内容区 -->
-    <div class="main-content">
-        <div class="top-bar">
-            <h1 class="page-title" id="pageTitle">仪表盘</h1>
-            <div class="user-menu">
-                <button class="notification-btn">
-                    🔔
-                    <span class="notification-badge" id="alertCount">3</span>
-                </button>
-                <div class="user-avatar">管</div>
-                <span>管理员</span>
-                <button class="logout-btn" onclick="logout()">退出</button>
-            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a class="nav-link active" onclick="showSection('dashboard')">📊 仪表盘</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="showSection('employees')">👥 员工管理</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="showSection('suppliers')">🏢 供应商管理</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="showSection('customers')">👤 客户管理</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="showSection('inventory')">📦 库存流水</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="showSection('alerts')">⚠️ 库存预警</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="showSection('supply-list')">📋 供货清单</a>
+                    </li>
+                </ul>
+            </nav>
         </div>
 
-        <div class="content-area">
-            <!-- 仪表盘 -->
-            <div id="dashboard-tab" class="tab-content active">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">总用户数</div>
-                            <div class="stat-icon">👥</div>
-                        </div>
-                        <div class="stat-number" id="totalUsers">156</div>
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 顶部栏 -->
+            <div class="header">
+                <div class="header-title">管理员控制台</div>
+                <div class="user-info">
+                    <div class="user-avatar">张</div>
+                    <div class="user-details">
+                        <div class="user-name">张三</div>
+                        <div>管理员</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">商品种类</div>
-                            <div class="stat-icon">📦</div>
-                        </div>
-                        <div class="stat-number" id="totalProducts">89</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">待处理预警</div>
-                            <div class="stat-icon">⚠️</div>
-                        </div>
-                        <div class="stat-number" id="totalAlerts">12</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">今日交易</div>
-                            <div class="stat-icon">💰</div>
-                        </div>
-                        <div class="stat-number" id="todayTransactions">24</div>
-                    </div>
-                </div>
-
-                <div class="data-table">
-                    <div class="table-header">
-                        <h3 class="table-title">最近活动</h3>
-                    </div>
-                    <div class="table-container">
-                        <div id="recentActivities">
-                            <!-- 最近活动列表 -->
-                        </div>
-                    </div>
+                    <button class="logout-btn" onclick="logout()">退出登录</button>
                 </div>
             </div>
 
-            <!-- 用户管理 -->
-            <div id="users-tab" class="tab-content">
-                <div class="data-table">
-                    <div class="table-header">
-                        <h3 class="table-title">用户管理</h3>
-                        <div class="table-actions">
-                            <div class="search-box">
-                                <input type="text" id="userSearch" placeholder="搜索用户..." onkeyup="searchUsers()">
-                            </div>
-                            <button class="btn btn-primary" onclick="showAddUserModal()">➕ 添加用户</button>
+            <!-- 内容区域 -->
+            <div class="content-area">
+                <!-- 仪表盘 -->
+                <div class="section active" id="dashboard">
+                    <h2 class="section-title">系统概览</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number">156</div>
+                            <div class="stat-label">总员工数</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">43</div>
+                            <div class="stat-label">供应商数量</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">289</div>
+                            <div class="stat-label">客户数量</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">12</div>
+                            <div class="stat-label">库存预警</div>
                         </div>
                     </div>
+                    
+                    <h3>最近活动</h3>
                     <div class="table-container">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>用户ID</th>
-                                    <th>用户名</th>
-                                    <th>用户类型</th>
-                                    <th>邮箱</th>
+                                    <th>时间</th>
+                                    <th>操作类型</th>
+                                    <th>操作人</th>
+                                    <th>详情</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2025-05-26 10:30</td>
+                                    <td>入库</td>
+                                    <td>李四</td>
+                                    <td>电子产品入库 50件</td>
+                                </tr>
+                                <tr>
+                                    <td>2025-05-26 09:15</td>
+                                    <td>出库</td>
+                                    <td>王五</td>
+                                    <td>日用品出库 30件</td>
+                                </tr>
+                                <tr>
+                                    <td>2025-05-25 16:45</td>
+                                    <td>新增客户</td>
+                                    <td>张三</td>
+                                    <td>新增客户：上海贸易公司</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 员工管理 -->
+                <div class="section" id="employees">
+                    <h2 class="section-title">员工管理</h2>
+                    <div class="btn-group">
+                        <button class="btn" onclick="addEmployee()">+ 添加员工</button>
+                        <button class="btn" onclick="exportEmployees()">📥 导出数据</button>
+                    </div>
+                    
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="搜索员工姓名或工号...">
+                        <button class="btn">🔍 搜索</button>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>工号</th>
+                                    <th>姓名</th>
+                                    <th>部门</th>
+                                    <th>职位</th>
+                                    <th>权限</th>
                                     <th>电话</th>
                                     <th>状态</th>
-                                    <th>注册时间</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
-                            <tbody id="usersTableBody">
-                                <!-- 用户列表将通过JavaScript动态生成 -->
+                            <tbody>
+                                <tr>
+                                    <td>E001</td>
+                                    <td>张三</td>
+                                    <td>管理部</td>
+                                    <td>系统管理员</td>
+                                    <td>管理员</td>
+                                    <td>138****1234</td>
+                                    <td>在职</td>
+                                    <td>
+                                        <button class="btn btn-edit">编辑</button>
+                                        <button class="btn btn-delete">删除</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>E002</td>
+                                    <td>李四</td>
+                                    <td>仓储部</td>
+                                    <td>仓管员</td>
+                                    <td>普通员工</td>
+                                    <td>139****5678</td>
+                                    <td>在职</td>
+                                    <td>
+                                        <button class="btn btn-edit">编辑</button>
+                                        <button class="btn btn-delete">删除</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>E003</td>
+                                    <td>王五</td>
+                                    <td>销售部</td>
+                                    <td>销售专员</td>
+                                    <td>普通员工</td>
+                                    <td>136****9012</td>
+                                    <td>在职</td>
+                                    <td>
+                                        <button class="btn btn-edit">编辑</button>
+                                        <button class="btn btn-delete">删除</button>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
-            </div>
 
-            <!-- 库存管理 -->
-            <div id="inventory-tab" class="tab-content">
-                <div class="data-table">
-                    <div class="table-header">
-                        <h3 class="table-title">库存管理</h3>
-                        <div class="table-actions">
-                            <div class="search-box">
-                                <input type="text" id="inventorySearch" placeholder="搜索商品..." onkeyup="searchInventory()">
-                            </div>
-                            <button class="btn btn-success" onclick="showStockAdjustModal()">📝 库存调整</button>
-                        </div>
+                <!-- 供应商管理 -->
+                <div class="section" id="suppliers">
+                    <h2 class="section-title">供应商管理</h2>
+                    <div class="btn-group">
+                        <button class="btn" onclick="addSupplier()">+ 添加供应商</button>
+                        <button class="btn" onclick="exportSuppliers()">📥 导出数据</button>
                     </div>
+                    
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="搜索供应商名称...">
+                        <button class="btn">🔍 搜索</button>
+                    </div>
+
                     <div class="table-container">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>商品ID</th>
-                                    <th>商品名称</th>
-                                    <th>分类</th>
-                                    <th>当前库存</th>
-                                    <th>安全库存</th>
-                                    <th>单价</th>
-                                    <th>总价值</th>
+                                    <th>供应商编号</th>
+                                    <th>公司名称</th>
+                                    <th>联系人</th>
+                                    <th>联系电话</th>
+                                    <th>主营产品</th>
+                                    <th>合作状态</th>
+                                    <th>信用等级</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>S001</td>
+                                    <td>北京电子科技有限公司</td>
+                                    <td>刘经理</td>
+                                    <td>010-12345678</td>
+                                    <td>电子元器件</td>
+                                    <td>合作中</td>
+                                    <td>A级</td>
+                                    <td>
+                                        <button class="btn btn-edit">编辑</button>
+                                        <button class="btn btn-delete">删除</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>S002</td>
+                                    <td>上海日用品制造厂</td>
+                                    <td>陈总</td>
+                                    <td>021-87654321</td>
+                                    <td>日用品</td>
+                                    <td>合作中</td>
+                                    <td>B级</td>
+                                    <td>
+                                        <button class="btn btn-edit">编辑</button>
+                                        <button class="btn btn-delete">删除</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>S003</td>
+                                    <td>广州服装贸易公司</td>
+                                    <td>王总</td>
+                                    <td>020-11223344</td>
+                                    <td>服装纺织</td>
+                                    <td>合作中</td>
+                                    <td>A级</td>
+                                    <td>
+                                        <button class="btn btn-edit">编辑</button>
+                                        <button class="btn btn-delete">删除</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 客户管理 -->
+                <div class="section" id="customers">
+                    <h2 class="section-title">客户管理</h2>
+                    <div class="btn-group">
+                        <button class="btn" onclick="addCustomer()">+ 添加客户</button>
+                        <button class="btn" onclick="exportCustomers()">📥 导出数据</button>
+                    </div>
+                    
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="搜索客户名称...">
+                        <button class="btn">🔍 搜索</button>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>客户编号</th>
+                                    <th>客户名称</th>
+                                    <th>联系人</th>
+                                    <th>联系电话</th>
+                                    <th>客户类型</th>
+                                    <th>信用额度</th>
                                     <th>状态</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
-                            <tbody id="inventoryTableBody">
-                                <!-- 库存列表将通过JavaScript动态生成 -->
+                            <tbody>
+                                <tr>
+                                    <td>C001</td>
+                                    <td>上海贸易有限公司</td>
+                                    <td>张经理</td>
+                                    <td>021-98765432</td>
+                                    <td>企业客户</td>
+                                    <td>100万</td>
+                                    <td>活跃</td>
+                                    <td>
+                                        <button class="btn btn-edit">编辑</button>
+                                        <button class="btn btn-delete">删除</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>C002</td>
+                                    <td>深圳零售连锁店</td>
+                                    <td>李总</td>
+                                    <td>0755-12345678</td>
+                                    <td>零售客户</td>
+                                    <td>50万</td>
+                                    <td>活跃</td>
+                                    <td>
+                                        <button class="btn btn-edit">编辑</button>
+                                        <button class="btn btn-delete">删除</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>C003</td>
+                                    <td>北京电商平台</td>
+                                    <td>王主管</td>
+                                    <td>010-87654321</td>
+                                    <td>电商客户</td>
+                                    <td>200万</td>
+                                    <td>活跃</td>
+                                    <td>
+                                        <button class="btn btn-edit">编辑</button>
+                                        <button class="btn btn-delete">删除</button>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
-            </div>
 
-            <!-- 出入库流水 -->
-            <div id="transactions-tab" class="tab-content">
-                <div class="data-table">
-                    <div class="table-header">
-                        <h3 class="table-title">出入库流水</h3>
-                        <div class="table-actions">
-                            <div class="search-box">
-                                <input type="text" id="transactionSearch" placeholder="搜索交易记录..." onkeyup="searchTransactions()">
-                            </div>
-                            <select id="transactionTypeFilter" onchange="filterTransactions()">
-                                <option value="">所有类型</option>
-                                <option value="入库">入库</option>
-                                <option value="出库">出库</option>
-                            </select>
-                        </div>
+                <!-- 库存流水 -->
+                <div class="section" id="inventory">
+                    <h2 class="section-title">出入库流水</h2>
+                    <div class="btn-group">
+                        <button class="btn" onclick="exportInventory()">📥 导出流水</button>
+                        <button class="btn" onclick="printReport()">🖨️ 打印报表</button>
                     </div>
-                    <div class="table-container" id="transactionsList">
-                        <!-- 交易记录将通过JavaScript动态生成 -->
+                    
+                    <div class="search-box">
+                        <input type="date" class="search-input" style="max-width: 200px;">
+                        <input type="date" class="search-input" style="max-width: 200px;">
+                        <select class="search-input" style="max-width: 150px;">
+                            <option>全部类型</option>
+                            <option>入库</option>
+                            <option>出库</option>
+                        </select>
+                        <button class="btn">🔍 搜索</button>
                     </div>
-                </div>
-            </div>
 
-            <!-- 库存预警 -->
-            <div id="alerts-tab" class="tab-content">
-                <div class="data-table">
-                    <div class="table-header">
-                        <h3 class="table-title">库存预警报表</h3>
-                        <div class="table-actions">
-                            <button class="btn btn-warning" onclick="generateAlertReport()">📊 生成报表</button>
-                            <button class="btn btn-success" onclick="resolveAllAlerts()">✅ 全部处理</button>
-                        </div>
-                    </div>
-                    <div id="alertsList">
-                        <!-- 预警列表将通过JavaScript动态生成 -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- 供货管理 -->
-            <div id="supply-tab" class="tab-content">
-                <div class="data-table">
-                    <div class="table-header">
-                        <h3 class="table-title">供货清单管理</h3>
-                        <div class="table-actions">
-                            <button class="btn btn-info" onclick="generatePurchasePlan()">📃 生成采购计划</button>
-                            <button class="btn btn-primary" onclick="showCreateSupplyModal()">📋 创建供货清单</button>
-                            <button class="btn btn-success" onclick="sendAllSupplyRequests()">📤 批量发送</button>
-                        </div>
-                    </div>
                     <div class="table-container">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>清单ID</th>
-                                    <th>供应商</th>
-                                    <th>采购计划</th>
-                                    <th>创建时间</th>
-                                    <th>商品数量</th>
-                                    <th>总金额</th>
-                                    <th>状态</th>
-                                    <th>操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="supplyTableBody">
-                                <!-- 供货清单将通过JavaScript动态生成 -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 报表分析 -->
-            <div id="reports-tab" class="tab-content">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">本月入库总量</div>
-                            <div class="stat-icon">📥</div>
-                        </div>
-                        <div class="stat-number">1,234</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">本月出库总量</div>
-                            <div class="stat-icon">📤</div>
-                        </div>
-                        <div class="stat-number">987</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">库存周转率</div>
-                            <div class="stat-icon">🔄</div>
-                        </div>
-                        <div class="stat-number">85%</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">库存准确率</div>
-                            <div class="stat-icon">🎯</div>
-                        </div>
-                        <div class="stat-number">98.5%</div>
-                    </div>
-                </div>
-
-                <div class="data-table">
-                    <div class="table-header">
-                        <h3 class="table-title">库存分析报表</h3>
-                        <div class="table-actions">
-                            <button class="btn btn-primary" onclick="exportReport()">📥 导出报表</button>
-                        </div>
-                    </div>
-                    <div class="table-container">
-                        <div style="padding: 2rem; text-align: center; color: #718096;">
-                            <div style="font-size: 4em; margin-bottom: 1rem;">📊</div>
-                            <p>报表分析功能</p>
-                            <p>可在此处展示各种图表和数据分析结果</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 采购计划模态框 -->
-    <div class="modal" id="purchasePlanModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">采购计划详情</h2>
-                <button class="modal-close" onclick="closeModal('purchasePlanModal')">×</button>
-            </div>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>计划编号</label>
-                    <input type="text" id="planId" readonly>
-                </div>
-                <div class="form-group">
-                    <label>供应商</label>
-                    <input type="text" id="supplierName" readonly>
-                </div>
-                <div class="form-group">
-                    <label>创建时间</label>
-                    <input type="text" id="planTime" readonly>
-                </div>
-                <div class="form-group">
-                    <label>商品列表</label>
-                    <div id="planProducts" class="data-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>商品名称</th>
-                                    <th>规格</th>
-                                    <th>采购数量</th>
-                                    <th>单价</th>
-                                    <th>金额</th>
-                                </tr>
-                            </thead>
-                            <tbody id="planProductsBody">
-                                <!-- 动态生成商品行 -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="form-actions">
-                <button class="btn btn-primary" onclick="sendPurchasePlan()">发送给供应商</button>
-                <button class="btn btn-secondary" onclick="closeModal('purchasePlanModal')">关闭</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 用户编辑模态框 -->
-    <div class="modal" id="userEditModal">
-        <div class="modal-content">
-            <form onsubmit="saveUser(event)">
-                <div class="modal-header">
-                    <h2 class="modal-title" id="modalTitle">新增用户</h2>
-                    <button class="modal-close" onclick="closeModal('userEditModal')">×</button>
-                </div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>用户名</label>
-                        <input type="text" id="username" required>
-                    </div>
-                    <div class="form-group">
-                        <label>用户类型</label>
-                        <select id="userRole" required>
-                            <option value="admin">管理员</option>
-                            <option value="operator">操作员</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>邮箱</label>
-                        <input type="email" id="email">
-                    </div>
-                    <div class="form-group">
-                        <label>电话</label>
-                        <input type="tel" id="phone">
-                    </div>
-                    <div class="form-group">
-                        <label>状态</label>
-                        <select id="userStatus" required>
-                            <option value="active">启用</option>
-                            <option value="inactive">禁用</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">保存</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('userEditModal')">取消</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 交易详情模态框 -->
-    <div class="modal" id="transactionDetailModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">交易详情</h2>
-                <button class="modal-close" onclick="closeModal('transactionDetailModal')">×</button>
-            </div>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>交易编号</label>
-                    <input type="text" id="transactionId" readonly>
-                </div>
-                <div class="form-group">
-                    <label>类型</label>
-                    <input type="text" id="transactionType" readonly>
-                </div>
-                <div class="form-group">
-                    <label>商品信息</label>
-                    <div id="transactionProducts" class="data-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>商品名称</th>
-                                    <th>规格</th>
+                                    <th>流水号</th>
+                                    <th>时间</th>
+                                    <th>类型</th>
+                                    <th>产品名称</th>
+                                    <th>规格型号</th>
                                     <th>数量</th>
                                     <th>单价</th>
-                                    <th>金额</th>
+                                    <th>总价</th>
+                                    <th>操作人</th>
+                                    <th>备注</th>
                                 </tr>
                             </thead>
-                            <tbody id="transactionProductsBody">
-                                <!-- 动态生成商品行 -->
+                            <tbody>
+                                <tr>
+                                    <td>IN202505260001</td>
+                                    <td>2025-05-26 10:30</td>
+                                    <td><span style="color: green;">入库</span></td>
+                                    <td>苹果手机</td>
+                                    <td>iPhone 15 Pro</td>
+                                    <td>50</td>
+                                    <td>¥8,999</td>
+                                    <td>¥449,950</td>
+                                    <td>李四</td>
+                                    <td>供应商交货</td>
+                                </tr>
+                                <tr>
+                                    <td>OUT202505260002</td>
+                                    <td>2025-05-26 09:15</td>
+                                    <td><span style="color: red;">出库</span></td>
+                                    <td>洗衣粉</td>
+                                    <td>2kg装</td>
+                                    <td>30</td>
+                                    <td>¥25</td>
+                                    <td>¥750</td>
+                                    <td>王五</td>
+                                    <td>客户订单</td>
+                                </tr>
+                                <tr>
+                                    <td>IN202505250003</td>
+                                    <td>2025-05-25 16:45</td>
+                                    <td><span style="color: green;">入库</span></td>
+                                    <td>运动鞋</td>
+                                    <td>Nike Air Max</td>
+                                    <td>100</td>
+                                    <td>¥599</td>
+                                    <td>¥59,900</td>
+                                    <td>赵六</td>
+                                    <td>新品到货</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>操作人</label>
-                    <input type="text" id="operator" readonly>
+
+                <!-- 库存预警 -->
+                <div class="section" id="alerts">
+                    <h2 class="section-title">库存预警报表</h2>
+                    <div class="btn-group">
+                        <button class="btn" onclick="refreshAlerts()">🔄 刷新预警</button>
+                        <button class="btn" onclick="exportAlerts()">📥 导出报表</button>
+                        <button class="btn" onclick="sendAlert()">📧 发送预警通知</button>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <strong>⚠️ 注意：</strong> 当前有 12 个商品库存不足，需要及时补货！
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <strong>🚨 紧急：</strong> 有 3 个商品库存严重不足，可能影响正常销售！
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>商品编号</th>
+                                    <th>商品名称</th>
+                                    <th>规格型号</th>
+                                    <th>当前库存</th>
+                                    <th>安全库存</th>
+                                    <th>预警级别</th>
+                                    <th>建议补货量</th>
+                                    <th>供应商</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="background-color: #ffebee;">
+                                    <td>P001</td>
+                                    <td>苹果手机</td>
+                                    <td>iPhone 15</td>
+                                    <td>5</td>
+                                    <td>20</td>
+                                    <td><span style="color: red; font-weight: bold;">紧急</span></td>
+                                    <td>75</td>
+                                    <td>广州服装贸易</td>
+                                    <td><button class="btn btn-edit">立即补货</button></td>
+                                </tr>
+                                <tr style="background-color: #fff3e0;">
+                                    <td>P004</td>
+                                    <td>笔记本电脑</td>
+                                    <td>ThinkPad X1</td>
+                                    <td>12</td>
+                                    <td>20</td>
+                                    <td><span style="color: orange; font-weight: bold;">警告</span></td>
+                                    <td>30</td>
+                                    <td>北京电子科技</td>
+                                    <td><button class="btn btn-edit">安排补货</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>时间</label>
-                    <input type="text" id="transactionTime" readonly>
+
+                <!-- 供货清单 -->
+                <div class="section" id="supply-list">
+                    <h2 class="section-title">供货清单管理</h2>
+                    <div class="btn-group">
+                        <button class="btn" onclick="createSupplyList()">+ 创建清单</button>
+                        <button class="btn" onclick="sendSupplyList()">📧 发送清单</button>
+                        <button class="btn" onclick="exportSupplyList()">📥 导出清单</button>
+                    </div>
+
+                    <div class="search-box">
+                        <select class="search-input" style="max-width: 200px;">
+                            <option>选择供应商</option>
+                            <option>北京电子科技有限公司</option>
+                            <option>上海日用品制造厂</option>
+                            <option>广州服装贸易公司</option>
+                        </select>
+                        <input type="date" class="search-input" style="max-width: 200px;">
+                        <button class="btn">🔍 筛选</button>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>清单编号</th>
+                                    <th>供应商</th>
+                                    <th>创建时间</th>
+                                    <th>产品数量</th>
+                                    <th>总金额</th>
+                                    <th>状态</th>
+                                    <th>发送状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>SL202505260001</td>
+                                    <td>北京电子科技有限公司</td>
+                                    <td>2025-05-26 11:00</td>
+                                    <td>5种商品</td>
+                                    <td>¥1,250,000</td>
+                                    <td><span style="color: green;">已确认</span></td>
+                                    <td><span style="color: blue;">已发送</span></td>
+                                    <td>
+                                        <button class="btn btn-edit">查看详情</button>
+                                        <button class="btn">重新发送</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>SL202505250002</td>
+                                    <td>上海日用品制造厂</td>
+                                    <td>2025-05-25 14:30</td>
+                                    <td>8种商品</td>
+                                    <td>¥85,000</td>
+                                    <td><span style="color: orange;">待确认</span></td>
+                                    <td><span style="color: blue;">已发送</span></td>
+                                    <td>
+                                        <button class="btn btn-edit">查看详情</button>
+                                        <button class="btn">催促回复</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>SL202505240003</td>
+                                    <td>广州服装贸易公司</td>
+                                    <td>2025-05-24 09:15</td>
+                                    <td>12种商品</td>
+                                    <td>¥456,000</td>
+                                    <td><span style="color: red;">草稿</span></td>
+                                    <td><span style="color: gray;">未发送</span></td>
+                                    <td>
+                                        <button class="btn btn-edit">编辑</button>
+                                        <button class="btn">发送</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 创建清单表单 -->
+                    <div id="supply-form" style="display: none; margin-top: 30px; padding: 20px; border: 2px solid #eee; border-radius: 10px;">
+                        <h3>创建供货清单</h3>
+                        <div class="form-group">
+                            <label class="form-label">选择供应商</label>
+                            <select class="form-input">
+                                <option>请选择供应商</option>
+                                <option>北京电子科技有限公司</option>
+                                <option>上海日用品制造厂</option>
+                                <option>广州服装贸易公司</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">清单名称</label>
+                            <input type="text" class="form-input" placeholder="输入清单名称">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">需求说明</label>
+                            <textarea class="form-input" rows="4" placeholder="详细描述采购需求..."></textarea>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn">保存草稿</button>
+                            <button class="btn">发送清单</button>
+                            <button class="btn" style="background: #6c757d;" onclick="hideSupplyForm()">取消</button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="form-actions">
-                <button class="btn btn-secondary" onclick="closeModal('transactionDetailModal')">关闭</button>
             </div>
         </div>
     </div>
-
-    <script>
-        // 模拟数据
-        const mockData = {
-            users: [
-                { id: 'USR-20250522-001', username: 'admin', role: '超级管理员', email: 'admin@warehouse.com', phone: '138-XXXX-1234', status: 'active', created: '2025-01-01' },
-                { id: 'USR-20250522-002', username: 'operator1', role: '操作员', email: 'operator1@warehouse.com', phone: '139-XXXX-5678', status: 'active', created: '2025-02-15' },
-                { id: 'USR-20250522-003', username: 'operator2', role: '操作员', email: 'operator2@warehouse.com', phone: '137-XXXX-9012', status: 'inactive', created: '2025-03-20' }
-            ],
-            inventory: [
-                { id: 'PRD-20250522-001', name: '笔记本电脑', category: '电子产品', stock: 150, safetyStock: 100, price: 5000, totalValue: 750000, status: 'active' },
-                { id: 'PRD-20250522-002', name: 'A4打印纸', category: '办公用品', stock: 5, safetyStock: 50, price: 20, totalValue: 100, status: 'warning' },
-                { id: 'PRD-20250522-003', name: '鼠标', category: '电子产品', stock: 80, safetyStock: 30, price: 50, totalValue: 4000, status: 'active' }
-            ],
-            transactions: [
-                { id: 'TR-20250522-001', type: '入库', products: [{ name: '笔记本电脑', spec: '15.6寸', quantity: 10, price: 5000 }], operator: 'admin', time: '2025-05-22 15:00' },
-                { id: 'TR-20250522-002', type: '出库', products: [{ name: '鼠标', spec: '无线', quantity: 5, price: 50 }], operator: 'operator1', time: '2025-05-22 14:30' }
-            ],
-            alerts: [
-                { id: 'ALT-20250522-001', type: 'critical', message: '商品：A4打印纸，当前库存：5包，安全库存：50包', time: '2025-05-22 14:45' }
-            ],
-            supply: [
-                { id: 'SPL-20250522-001', supplier: 'XX科技有限公司', planId: 'PL-20250522-001', created: '2025-05-22 14:30', productCount: 15, totalAmount: 8500, status: 'pending' }
-            ],
-            purchasePlans: [
-                { id: 'PL-20250522-001', supplier: 'XX科技有限公司', time: '2025-05-22 14:30', products: [
-                    { name: '笔记本电脑', spec: '15.6寸', quantity: 5, price: 5000, amount: 25000 },
-                    { name: '鼠标', spec: '无线', quantity: 20, price: 50, amount: 1000 }
-                ]}
-            ]
-        };
-
-        // 页面初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            renderUsersTable();
-            renderInventoryTable();
-            renderTransactionsList();
-            renderAlertsList();
-            renderSupplyTable();
-            renderRecentActivities();
-        });
-
-        // 切换侧边栏
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
-        }
-
-        // 切换标签页
-        function switchTab(tabId) {
-            // 移除所有活动状态
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // 添加当前活动状态
-            document.querySelector(`.nav-item[data-tab="${tabId}"]` || 
-                                `.nav-item[onclick="switchTab('${tabId}')"]`).classList.add('active');
-            
-            // 隐藏所有标签页
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // 显示当前标签页
-            document.getElementById(`${tabId}-tab`).classList.add('active');
-            
-            // 更新页面标题
-            const titles = {
-                'dashboard': '仪表盘',
-                'users': '用户管理',
-                'inventory': '库存管理',
-                'transactions': '出入库流水',
-                'alerts': '库存预警',
-                'supply': '供货管理',
-                'reports': '报表分析'
-            };
-            document.getElementById('pageTitle').textContent = titles[tabId] || tabId;
-        }
-
-        // 渲染用户表格
-        function renderUsersTable() {
-            const tableBody = document.getElementById('usersTableBody');
-            tableBody.innerHTML = mockData.users.map(user => `
-                <tr>
-                    <td>${user.id}</td>
-                    <td>${user.username}</td>
-                    <td>${user.role}</td>
-                    <td>${user.email}</td>
-                    <td>${user.phone}</td>
-                    <td><span class="status-badge ${user.status === 'active' ? 'status-active' : 'status-inactive'}">${user.status === 'active' ? '启用' : '禁用'}</span></td>
-                    <td>${user.created}</td>
-                    <td>
-                        <button class="btn btn-sm btn-info" onclick="editUser('${user.id}')">编辑</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteUser('${user.id}')">删除</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // 渲染库存表格
-        function renderInventoryTable() {
-            const tableBody = document.getElementById('inventoryTableBody');
-            tableBody.innerHTML = mockData.inventory.map(item => `
-                <tr>
-                    <td>${item.id}</td>
-                    <td>${item.name}</td>
-                    <td>${item.category}</td>
-                    <td>${item.stock}</td>
-                    <td>${item.safetyStock}</td>
-                    <td>￥${item.price}</td>
-                    <td>￥${item.totalValue}</td>
-                    <td><span class="status-badge ${item.status === 'active' ? 'status-active' : item.status === 'warning' ? 'status-warning' : 'status-inactive'}">${item.status === 'active' ? '正常' : item.status === 'warning' ? '预警' : '缺货'}</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" onclick="viewInventoryDetails('${item.id}')">详情</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // 渲染交易列表
-        function renderTransactionsList() {
-            const container = document.getElementById('transactionsList');
-            container.innerHTML = mockData.transactions.map(transaction => `
-                <div class="transaction-item" data-transaction-id="${transaction.id}">
-                    <div class="transaction-type ${transaction.type === '入库' ? 'transaction-in' : 'transaction-out'}">${transaction.type === '入库' ? '➕' : '➖'}</div>
-                    <div class="transaction-info">
-                        <div class="transaction-title">商品${transaction.type}</div>
-                        <div class="transaction-details">商品：${transaction.products[0].name}，数量：${transaction.products[0].quantity}${transaction.products[0].unit || '台'}</div>
-                    </div>
-                    <div class="transaction-amount">
-                        <div class="transaction-quantity">${transaction.products[0].quantity}</div>
-                        <div class="transaction-time">${transaction.time}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // 渲染预警列表
-        function renderAlertsList() {
-            const container = document.getElementById('alertsList');
-            container.innerHTML = mockData.alerts.map(alert => `
-                <div class="alert-card alert-${alert.type}" data-alert-id="${alert.id}">
-                    <div class="alert-content">
-                        <div class="alert-header">
-                            <div>
-                                <h3 class="alert-title">库存不足预警</h3>
-                                <div class="alert-time">${alert.time}</div>
-                            </div>
-                            <button class="btn btn-sm btn-danger" onclick="resolveAlert(this)">处理</button>
-                        </div>
-                        <p>${alert.message}</p>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // 渲染供货表格
-        function renderSupplyTable() {
-            const tableBody = document.getElementById('supplyTableBody');
-            tableBody.innerHTML = mockData.supply.map(supply => `
-                <tr>
-                    <td>${supply.id}</td>
-                    <td>${supply.supplier}</td>
-                    <td><button class="btn btn-sm btn-primary" onclick="viewPurchasePlan('${supply.planId}')">查看计划</button></td>
-                    <td>${supply.created}</td>
-                    <td>${supply.productCount}</td>
-                    <td>￥${supply.totalAmount}</td>
-                    <td><span class="status-badge ${supply.status === 'pending' ? 'status-pending' : 'status-completed'}">${supply.status === 'pending' ? '待发送' : '已完成'}</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-success" onclick="sendSupplyRequest(this)">发送</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteSupply<button class="btn btn-sm btn-danger" onclick="deleteSupply(this)">删除</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // 渲染最近活动
-        function renderRecentActivities() {
-            const container = document.getElementById('recentActivities');
-            container.innerHTML = mockData.transactions.map(transaction => `
-                <div class="transaction-item">
-                    <div class="transaction-type ${transaction.type === '入库' ? 'transaction-in' : 'transaction-out'}">${transaction.type === '入库' ? '➕' : '➖'}</div>
-                    <div class="transaction-info">
-                        <div class="transaction-title">${transaction.operator} 操作了商品${transaction.type}</div>
-                        <div class="transaction-details">商品：${transaction.products[0].name}，数量：${transaction.products[0].quantity}${transaction.products[0].unit || '台'}</div>
-                    </div>
-                    <div class="transaction-amount">
-                        <div class="transaction-time">${transaction.time}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // 查看采购计划
-        function viewPurchasePlan(planId) {
-            const plan = mockData.purchasePlans.find(p => p.id === planId);
-            if (!plan) return;
-            
-            // 填充模态框
-            document.getElementById('planId').value = plan.id;
-            document.getElementById('supplierName').value = plan.supplier;
-            document.getElementById('planTime').value = plan.time;
-            
-            const productsBody = document.getElementById('planProductsBody');
-            productsBody.innerHTML = plan.products.map(product => `
-                <tr>
-                    <td>${product.name}</td>
-                    <td>${product.spec}</td>
-                    <td>${product.quantity}</td>
-                    <td>￥${product.price}</td>
-                    <td>￥${product.amount}</td>
-                </tr>
-            `).join('');
-            
-            document.getElementById('purchasePlanModal').classList.add('active');
-        }
-
-        // 发送采购计划
-        function sendPurchasePlan() {
-            // 模拟发送请求
-            alert('采购计划已发送给供应商！');
-            document.getElementById('purchasePlanModal').classList.remove('active');
-        }
-
-        // 处理库存预警
-        function resolveAlert(button) {
-            const alertCard = button.closest('.alert-card');
-            const alertId = alertCard.dataset.alertId;
-            
-            // 从数组中移除预警
-            mockData.alerts = mockData.alerts.filter(alert => alert.id !== alertId);
-            
-            // 更新UI
-            alertCard.style.display = 'none';
-            document.getElementById('alertCount').textContent = mockData.alerts.length;
-            
-            // 模拟发送处理请求
-            console.log(`处理预警: ${alertId}`);
-        }
-
-        // 处理所有预警
-        function resolveAllAlerts() {
-            if (confirm('确定要处理所有预警吗？')) {
-                mockData.alerts = [];
-                document.getElementById('alertsList').innerHTML = '<div class="empty-state">没有待处理的预警</div>';
-                document.getElementById('alertCount').textContent = '0';
-            }
-        }
-
-        // 编辑用户
-        function editUser(userId) {
-            const user = mockData.users.find(u => u.id === userId);
-            if (!user) return;
-            
-            document.getElementById('modalTitle').textContent = '编辑用户';
-            document.getElementById('username').value = user.username;
-            document.getElementById('userRole').value = user.role;
-            document.getElementById('email').value = user.email;
-            document.getElementById('phone').value = user.phone;
-            document.getElementById('userStatus').value = user.status;
-            
-            document.getElementById('userEditModal').classList.add('active');
-        }
-
-        // 添加用户
-        function showAddUserModal() {
-            document.getElementById('modalTitle').textContent = '添加用户';
-            document.getElementById('username').value = '';
-            document.getElementById('userRole').value = 'operator';
-            document.getElementById('email').value = '';
-            document.getElementById('phone').value = '';
-            document.getElementById('userStatus').value = 'active';
-            
-            document.getElementById('userEditModal').classList.add('active');
-        }
-
-        // 保存用户
-        function saveUser(event) {
-            event.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const role = document.getElementById('userRole').value;
-            const email = document.getElementById('email').value;
-            const phone = document.getElementById('phone').value;
-            const status = document.getElementById('userStatus').value;
-            
-            // 模拟保存用户
-            alert('用户保存成功！');
-            document.getElementById('userEditModal').classList.remove('active');
-            renderUsersTable();
-        }
-
-        // 删除用户
-        function deleteUser(userId) {
-            if (confirm('确定要删除这个用户吗？')) {
-                mockData.users = mockData.users.filter(u => u.id !== userId);
-                renderUsersTable();
-            }
-        }
-
-        // 搜索用户
-        function searchUsers() {
-            const searchText = document.getElementById('userSearch').value.toLowerCase();
-            const filteredUsers = mockData.users.filter(user => 
-                user.username.toLowerCase().includes(searchText) || 
-                user.email.toLowerCase().includes(searchText) ||
-                user.role.toLowerCase().includes(searchText)
-            );
-            
-            const tableBody = document.getElementById('usersTableBody');
-            tableBody.innerHTML = filteredUsers.map(user => `
-                <tr>
-                    <td>${user.id}</td>
-                    <td>${user.username}</td>
-                    <td>${user.role}</td>
-                    <td>${user.email}</td>
-                    <td>${user.phone}</td>
-                    <td><span class="status-badge ${user.status === 'active' ? 'status-active' : 'status-inactive'}">${user.status === 'active' ? '启用' : '禁用'}</span></td>
-                    <td>${user.created}</td>
-                    <td>
-                        <button class="btn btn-sm btn-info" onclick="editUser('${user.id}')">编辑</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteUser('${user.id}')">删除</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // 生成采购计划
-        function generatePurchasePlan() {
-            alert('根据库存预警，已生成采购计划！');
-            // 实际应用中会根据库存数据生成采购计划
-        }
-
-        // 导出报表
-        function exportReport() {
-            alert('报表导出成功！');
-            // 实际应用中会导出Excel或PDF报表
-        }
-
-        // 查看库存详情
-        function viewInventoryDetails(productId) {
-            alert(`查看商品详情: ${productId}`);
-            // 实际应用中会打开商品详情页
-        }
-
-        // 调整库存
-        function showStockAdjustModal() {
-            alert('打开库存调整模态框');
-            // 实际应用中会打开库存调整表单
-        }
-
-        // 发送供货请求
-        function sendSupplyRequest(button) {
-            const row = button.closest('tr');
-            const statusBadge = row.querySelector('.status-badge');
-            
-            // 更新状态
-            statusBadge.className = 'status-badge status-completed';
-            statusBadge.textContent = '已完成';
-            
-            // 禁用按钮
-            button.disabled = true;
-            button.textContent = '已发送';
-            button.classList.remove('btn-success');
-            button.classList.add('btn-secondary');
-            
-            alert('供货请求已发送！');
-        }
-
-        // 批量发送供货请求
-        function sendAllSupplyRequests() {
-            const buttons = document.querySelectorAll('#supplyTableBody .btn-success');
-            buttons.forEach(button => {
-                sendSupplyRequest(button);
-            });
-        }
-
-        // 删除供货单
-        function deleteSupply(button) {
-            if (confirm('确定要删除这个供货单吗？')) {
-                const row = button.closest('tr');
-                row.remove();
-            }
-        }
-
-        // 搜索库存
-        function searchInventory() {
-            const searchText = document.getElementById('inventorySearch').value.toLowerCase();
-            const filteredItems = mockData.inventory.filter(item => 
-                item.name.toLowerCase().includes(searchText) || 
-                item.category.toLowerCase().includes(searchText)
-            );
-            
-            const tableBody = document.getElementById('inventoryTableBody');
-            tableBody.innerHTML = filteredItems.map(item => `
-                <tr>
-                    <td>${item.id}</td>
-                    <td>${item.name}</td>
-                    <td>${item.category}</td>
-                    <td>${item.stock}</td>
-                    <td>${item.safetyStock}</td>
-                    <td>￥${item.price}</td>
-                    <td>￥${item.totalValue}</td>
-                    <td><span class="status-badge ${item.status === 'active' ? 'status-active' : item.status === 'warning' ? 'status-warning' : 'status-inactive'}">${item.status === 'active' ? '正常' : item.status === 'warning' ? '预警' : '缺货'}</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" onclick="viewInventoryDetails('${item.id}')">详情</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // 搜索交易记录
-        function searchTransactions() {
-            const searchText = document.getElementById('transactionSearch').value.toLowerCase();
-            const filteredTransactions = mockData.transactions.filter(transaction => 
-                transaction.products.some(p => p.name.toLowerCase().includes(searchText)) ||
-                transaction.operator.toLowerCase().includes(searchText)
-            );
-            
-            const container = document.getElementById('transactionsList');
-            container.innerHTML = filteredTransactions.map(transaction => `
-                <div class="transaction-item" data-transaction-id="${transaction.id}">
-                    <div class="transaction-type ${transaction.type === '入库' ? 'transaction-in' : 'transaction-out'}">${transaction.type === '入库' ? '➕' : '➖'}</div>
-                    <div class="transaction-info">
-                        <div class="transaction-title">商品${transaction.type}</div>
-                        <div class="transaction-details">商品：${transaction.products[0].name}，数量：${transaction.products[0].quantity}${transaction.products[0].unit || '台'}</div>
-                    </div>
-                    <div class="transaction-amount">
-                        <div class="transaction-quantity">${transaction.products[0].quantity}</div>
-                        <div class="transaction-time">${transaction.time}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // 过滤交易记录
-        function filterTransactions() {
-            const typeFilter = document.getElementById('transactionTypeFilter').value;
-            let filteredTransactions = mockData.transactions;
-            
-            if (typeFilter) {
-                filteredTransactions = filteredTransactions.filter(t => t.type === typeFilter);
-            }
-            
-            const container = document.getElementById('transactionsList');
-            container.innerHTML = filteredTransactions.map(transaction => `
-                <div class="transaction-item" data-transaction-id="${transaction.id}">
-                    <div class="transaction-type ${transaction.type === '入库' ? 'transaction-in' : 'transaction-out'}">${transaction.type === '入库' ? '➕' : '➖'}</div>
-                    <div class="transaction-info">
-                        <div class="transaction-title">商品${transaction.type}</div>
-                        <div class="transaction-details">商品：${transaction.products[0].name}，数量：${transaction.products[0].quantity}${transaction.products[0].unit || '台'}</div>
-                    </div>
-                    <div class="transaction-amount">
-                        <div class="transaction-quantity">${transaction.products[0].quantity}</div>
-                        <div class="transaction-time">${transaction.time}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // 关闭模态框
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        // 登出
-        function logout() {
-            if (confirm('确定要退出登录吗？')) {
-                window.location.href = '#login';
-                // 实际应用中会重定向到登录页
-            }
-        }
-    </script>
+    <script src="{{url_for('static',filename='js/staff.js')}}"></script>
 </body>
 </html>
+                                    <td>50</td>
+                                    <td>北京电子科技</td>
+                                    <td><button class="btn btn-edit">立即补货</button></td>
+                                </tr>
+                                <tr style="background-color: #fff3e0;">
+                                    <td>P002</td>
+                                    <td>洗衣粉</td>
+                                    <td>2kg装</td>
+                                    <td>15</td>
+                                    <td>30</td>
+                                    <td><span style="color: orange; font-weight: bold;">警告</span></td>
+                                    <td>100</td>
+                                    <td>上海日用品制造</td>
+                                    <td><button class="btn btn-edit">安排补货</button></td>
+                                </tr>
+                                <tr style="background-color: #ffebee;">
+                                    <td>P003</td>
+                                    <td>运动鞋</td>
+                                    <td>Nike Air Max</td>
+                                    <td>8</td>
+                                    <td>25</td>
+                                    <td><span style="color: red; font-weight: bold;">紧急</span>
