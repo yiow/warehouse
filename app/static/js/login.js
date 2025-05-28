@@ -55,13 +55,13 @@ document.addEventListener('DOMContentLoaded', function() {
           alert("登陆成功，即将跳转");
           const type=userType.value;
           if (type=='customer'){
-            window.location.href = '/customer/dashboard';
+            window.location.href = '/customer';
           }
           if (type=='staff'){
-            window.location.href = '/staff/dashboard';
+            window.location.href = '/staff';
           }
           if (type=='supplier'){
-            window.location.href = '/supplier/dashboard';
+            window.location.href = '/supplier';
           }
         }
         else{
