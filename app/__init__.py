@@ -6,7 +6,8 @@ def create_app(config_name='default'):
     # 加载配置
     from app.config import config
     app.config.from_object(config[config_name])
-    
+    app.secret_key = 'your-very-secure-secret-key'
+
     # 初始化扩展
     from app.extensions import db
     db.init_app(app)

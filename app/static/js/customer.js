@@ -13,82 +13,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// // 商品数据
-// const products = [
-//     {
-//         id: 1,
-//         name: "笔记本电脑",
-//         description: "高性能办公笔记本，适合日常办公和学习使用",
-//         price: 4999.00,
-//         stock: 15,
-//         category: "电子产品",
-//         image: "💻"
-//     },
-//     {
-//         id: 2,
-//         name: "无线鼠标",
-//         description: "人体工学设计，2.4GHz无线连接，续航持久",
-//         price: 89.90,
-//         stock: 50,
-//         category: "电子产品",
-//         image: "🖱️"
-//     },
-//     {
-//         id: 3,
-//         name: "办公椅",
-//         description: "人体工学设计，舒适透气，可调节高度",
-//         price: 599.00,
-//         stock: 8,
-//         category: "办公用品",
-//         image: "🪑"
-//     },
-//     {
-//         id: 4,
-//         name: "台式机显示器",
-//         description: "27英寸高清显示器，色彩还原度高",
-//         price: 1299.00,
-//         stock: 20,
-//         category: "电子产品",
-//         image: "🖥️"
-//     },
-//     {
-//         id: 5,
-//         name: "文件夹",
-//         description: "A4规格文件夹，多色可选，办公必备",
-//         price: 12.50,
-//         stock: 100,
-//         category: "办公用品",
-//         image: "📁"
-//     },
-//     {
-//         id: 6,
-//         name: "咖啡机",
-//         description: "全自动咖啡机，多种口味选择，办公室首选",
-//         price: 2199.00,
-//         stock: 3,
-//         category: "家居用品",
-//         image: "☕"
-//     },
-//     {
-//         id: 7,
-//         name: "打印机",
-//         description: "多功能激光打印机，打印复印扫描三合一",
-//         price: 1599.00,
-//         stock: 12,
-//         category: "办公用品",
-//         image: "🖨️"
-//     },
-//     {
-//         id: 8,
-//         name: "电钻工具包",
-//         description: "专业电钻工具包，适合维修和安装工作",
-//         price: 299.00,
-//         stock: 0,
-//         category: "工具设备",
-//         image: "🔧"
-//     }
-// ];
-
 // 购物车数据
 let cart = [];
 
@@ -110,7 +34,6 @@ function displayProducts(productList) {
         if (product.stock === 0) {
             stockClass = 'stock-out';
             stockText = '暂时缺货';
-            buttonDisabled = 'disabled';
             buttonText = '暂时缺货';
         } else if (product.stock < 10) {
             stockClass = 'stock-low';
@@ -124,7 +47,7 @@ function displayProducts(productList) {
                 <div class="product-description">${product.description}</div>
                 <div class="product-price">¥${Number(product.price).toFixed(2)}</div>
                 <div class="product-stock ${stockClass}">${stockText}</div>
-                <button class="add-to-cart-btn" onclick="addToCart(${product.id})" ${buttonDisabled}>
+                <button class="add-to-cart-btn" onclick="addToCart(event,${product.id})" ${buttonDisabled}>
                     ${buttonText}
                 </button>
             </div>
@@ -155,20 +78,22 @@ function filterByCategory() {
 }
 
 // 添加到购物车
-function addToCart(productId) {
+function addToCart(event,productId) {
     const product = products.find(p => p.id === productId);
-    if (!product || product.stock === 0) return;
+    if (!product) return;
     
     const existingItem = cart.find(item => item.id === productId);
     
     if (existingItem) {
         if (existingItem.quantity < product.stock) {
             existingItem.quantity++;
-        } else {
-            alert('库存不足！');
-            return;
+        } 
+        else {
+            existingItem.quantity++;
+            alert('库存不足！若持续购买需等待较长时间交货');
         }
-    } else {
+    }  
+    else {
         cart.push({
             ...product,
             quantity: 1
@@ -214,7 +139,7 @@ function updateCartDisplay() {
             <div class="cart-item">
                 <div class="cart-item-info">
                     <div class="cart-item-name">${item.name}</div>
-                    <div class="cart-item-price">¥${item.price.toFixed(2)}</div>
+                    <div class="cart-item-price">¥${item.price}</div>
                     <div class="quantity-controls">
                         <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
                         <input type="number" class="quantity-input" value="${item.quantity}" 
@@ -577,18 +502,8 @@ ${order.items.map(item =>
 
 // 退出登录
 function logout() {
-    if (confirm('确定要退出登录吗？')) {
-        // 清除购物车
-        cart = [];
-        updateCartDisplay();
-        
-        // 这里可以清除登录状态
-        // localStorage.removeItem('userToken');
-        
-        // 跳转到登录页面
-        alert('已退出登录');
-        // window.location.href = '/login.html';
-    }
+    alert('即将返回登陆界面')
+    window.location.href='/logout'
 }
 
 // 页面关闭前保存购物车

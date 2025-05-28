@@ -23,7 +23,7 @@
 
             <!-- 用户信息和退出按钮 -->
             <div class="user-info">
-                <span>欢迎，客户用户</span>
+                <span>欢迎，{{user.username}}</span>
                 <button class="logout-btn" onclick="logout()">退出登录</button>
             </div>
         </div>
@@ -62,10 +62,10 @@
     <div class="cart-sidebar" id="cartSidebar">
         <div class="cart-header">
             <h2 class="cart-title">购物车</h2>
-            <button class="cart-close" onclick="closeCart()">×</button>
+            <button class="cart-close" onclick="closeCart()"></button>
         </div>
         <div class="cart-content">
-            <div id="cart">
+            <div id="cartItems">
                 <!-- 购物车商品将通过JavaScript动态生成 -->
             </div>
             <div class="cart-summary" id="cartSummary" style="display: none;">
