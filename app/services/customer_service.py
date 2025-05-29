@@ -17,3 +17,6 @@ def show_products():
             return jsonify(products)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+def save_cart():
+    
