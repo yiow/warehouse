@@ -163,14 +163,14 @@ function updateQuantity(productId, change) {
     
     if (item) {
         const newQuantity = item.quantity + change;
-        if (newQuantity > 0 && newQuantity <= product.stock) {
-            item.quantity = newQuantity;
-            updateCartDisplay();
-        } else if (newQuantity <= 0) {
-            removeFromCart(productId);
-        } else {
-            alert('库存不足！');
+        if (newQuantity>product.stock){
+            alert('库存不足，仍购买需待较长时间交货！');
         }
+        if (newQuantity<=0){
+            removeFromCart(productId);
+        }
+        item.quantity=newQuantity;
+        updateCartDisplay();
     }
 }
 
@@ -179,16 +179,14 @@ function setQuantity(productId, quantity) {
     const item = cart.find(item => item.id === productId);
     const product = products.find(p => p.id === productId);
     const qty = parseInt(quantity);
-    
-    if (item && qty > 0 && qty <= product.stock) {
-        item.quantity = qty;
-        updateCartDisplay();
-    } else if (qty <= 0) {
-        removeFromCart(productId);
-    } else {
-        alert('库存不足！');
-        updateCartDisplay();
+    if (qty>product.stock){
+        alert('库存不足，仍购买需待较长时间交货！');
     }
+    if (qty<=0){
+        removeFromCart(productId);
+    }
+    item.quantity=qty;
+    updateCartDisplay();
 }
 
 // 从购物车移除商品
@@ -502,8 +500,8 @@ ${order.items.map(item =>
 
 // 退出登录
 function logout() {
-    alert('即将返回登陆界面')
-    window.location.href='/logout'
+    alert('即将返回登陆界面');
+    window.location.href='/logout';
 }
 
 // 页面关闭前保存购物车
