@@ -1,22 +1,35 @@
 let products = [];
-
-document.addEventListener('DOMContentLoaded', function () {
-    fetch('/products')
-    .then(response => response.json())
-    .then(data => {
-        products = data;
-        displayProducts(products);
-        updateCartDisplay();
-    })
-    .catch(error => {
-        console.error('获取商品数据失败:', error);
-    });
-});
-
 // 购物车数据
 let cart = [];
+document.addEventListener('DOMContentLoaded', async function () {
+    try {
+        // 1. 加载商品
+        const productsResponse = await fetch('/products');
+        products = await productsResponse.json();
+        displayProducts(products);
+        
+        // 2. 等待购物车加载
+        await loadCart();
+    } catch (error) {
+        console.error('初始化失败:', error);
+    }
+});
 
 
+//加载购物车数据
+function loadCart(){
+    fetch('/load_cart',{
+        method:'GET',
+        headers:{
+          'Content-Type':'application/json',
+        }
+    })
+    .then(response=>response.json())
+    .then(data=>{
+        cart=data;
+        updateCartDisplay();
+    })
+}
 // 显示商品
 function displayProducts(productList) {
     const grid = document.getElementById('productsGrid');
@@ -214,28 +227,23 @@ function closeCart() {
 }
 
 // 保存购物车到数据库
-async function saveCartToDB() {
-    try {
-        const response = await fetch('/save_cart', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify({ cart })
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || '保存购物车失败');
+function saveCartToDB() {
+    fetch('/save_cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cart })
+    })
+    .then(response=>response.json())
+    .then(data=>{
+        if (!data.success){
+            throw new Error(data.message);
         }
-        return await response.json();
-    } 
-    catch (error) {
-        console.error('保存购物车出错:', error);
-        // 可以在这里添加重试逻辑或本地存储作为fallback
-        throw error;
-    }
+    })
+    .catch(error=>{
+        console.error('保存购物车出错',error);
+    });
 }
 
 // 显示结算模态框
@@ -526,19 +534,20 @@ ${order.items.map(item =>
 // 退出登录
 function logout() {
     alert('即将返回登陆界面');
+    saveCartToDB();
     window.location.href='/logout';
 }
 
-// 页面关闭前保存购物车
-window.addEventListener('beforeunload', function() {
-    localStorage.setItem('customerCart', JSON.stringify(cart));
-});
+// // 页面关闭前保存购物车
+// window.addEventListener('beforeunload', function() {
+//     localStorage.setItem('customerCart', JSON.stringify(cart));
+// });
 
-// 页面加载时恢复购物车
-window.addEventListener('load', function() {
-    const savedCart = localStorage.getItem('customerCart');
-    if (savedCart) {
-        cart = JSON.parse(savedCart);
-        updateCartDisplay();
-    }
-});
+// // 页面加载时恢复购物车
+// window.addEventListener('load', function() {
+//     const savedCart = localStorage.getItem('customerCart');
+//     if (savedCart) {
+//         cart = JSON.parse(savedCart);
+//         updateCartDisplay();
+//     }
+// });
