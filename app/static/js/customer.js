@@ -214,28 +214,23 @@ function closeCart() {
 }
 
 // 保存购物车到数据库
-async function saveCartToDB() {
-    try {
-        const response = await fetch('/save_cart', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify({ cart })
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || '保存购物车失败');
+function saveCartToDB() {
+    fetch('/save_cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cart })
+    })
+    .then(response=>response.json())
+    .then(data=>{
+        if (!data.success){
+            throw new Error(data.message);
         }
-        return await response.json();
-    } 
-    catch (error) {
-        console.error('保存购物车出错:', error);
-        // 可以在这里添加重试逻辑或本地存储作为fallback
-        throw error;
-    }
+    })
+    .catch(error=>{
+        console.error('保存购物车出错',error);
+    });
 }
 
 // 显示结算模态框
