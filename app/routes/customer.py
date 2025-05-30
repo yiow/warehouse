@@ -22,7 +22,7 @@ def logout():
     session.clear()
     return redirect(url_for('auth.show_login'))
 
-@customer_bp.route('/save_cart',methds='POST')
-def save_cart():
-    cart=request.get_json()
+# @customer_bp.route('/save_cart',methds='POST')
+# def save_cart():
+#     cart=request.get_json()
     
