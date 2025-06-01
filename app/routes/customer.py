@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify, g,session,redirect,url_for
-from app.services.customer_service import show_products,save_cart_service,load_cart_service
+from app.services.customer_service import show_products,save_cart_service,load_cart_service,save_order_service,get_orders_service
 
 customer_bp = Blueprint('customer', __name__)
 
@@ -55,3 +55,50 @@ def load_cart():
     except Exception as e:
         print(f'加载购物车错误{e}')
         return []
+
+# 保存订单数据
+@customer_bp.route('/save_order', methods=['POST'])
+def save_order():
+    # 检查用户是否登录 (使用session)
+    if 'user_id' not in session:
+        return jsonify({'error': '未授权访问'}), 401
+
+    try:
+        data = request.get_json()
+        cart = data.get('items')
+        user_id = session['user_id']
+
+        # 调用服务层保存订单
+        success = save_order_service(user_id, cart)
+
+        if success:
+            return jsonify({'success': True, 'message': '订单保存成功'}), 200
+        else:
+            return jsonify({'success': False, 'error': '订单保存失败'}), 500
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# 获取用户订单数据
+@customer_bp.route('/orders', methods=['GET'])
+def get_orders():
+    # 检查用户是否登录 (使用session)
+    if 'user_id' not in session:
+        return jsonify({'error': '未授权访问'}), 401
+
+    try:
+        user_id = session['user_id']
+        orders = get_orders_service(user_id)
+        return jsonify(orders)
+    except Exception as e:
+        print(f'获取订单错误: {e}')
+        return []
+
+# # 查看订单页面
+# @customer_bp.route('/orders', methods=['GET'])
+# def view_orders():
+#     user_info = {
+#         'username': session['username'],
+#         'userid': session['user_id']
+#     }
+#     return render_template('orders.html', user=user_info)
