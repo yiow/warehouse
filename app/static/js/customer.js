@@ -1,22 +1,36 @@
+//商品数据
 let products = [];
-
-document.addEventListener('DOMContentLoaded', function () {
-    fetch('/products')
-    .then(response => response.json())
-    .then(data => {
-        products = data;
-        displayProducts(products);
-        updateCartDisplay();
-    })
-    .catch(error => {
-        console.error('获取商品数据失败:', error);
-    });
-});
-
 // 购物车数据
 let cart = [];
+document.addEventListener('DOMContentLoaded', async function () {
+    try {
+        // 1. 加载商品
+        const productsResponse = await fetch('/products');
+        products = await productsResponse.json();
+        displayProducts(products);
+        
+        // 2. 等待购物车加载
+        await loadCart();
+    } catch (error) {
+        console.error('初始化失败:', error);
+    }
+});
 
 
+//加载购物车数据
+function loadCart(){
+    fetch('/load_cart',{
+        method:'GET',
+        headers:{
+          'Content-Type':'application/json',
+        }
+    })
+    .then(response=>response.json())
+    .then(data=>{
+        cart=data;
+        updateCartDisplay();
+    })
+}
 // 显示商品
 function displayProducts(productList) {
     const grid = document.getElementById('productsGrid');
@@ -163,14 +177,14 @@ function updateQuantity(productId, change) {
     
     if (item) {
         const newQuantity = item.quantity + change;
-        if (newQuantity > 0 && newQuantity <= product.stock) {
-            item.quantity = newQuantity;
-            updateCartDisplay();
-        } else if (newQuantity <= 0) {
-            removeFromCart(productId);
-        } else {
-            alert('库存不足！');
+        if (newQuantity>product.stock){
+            alert('库存不足，仍购买需待较长时间交货！');
         }
+        if (newQuantity<=0){
+            removeFromCart(productId);
+        }
+        item.quantity=newQuantity;
+        updateCartDisplay();
     }
 }
 
@@ -179,16 +193,14 @@ function setQuantity(productId, quantity) {
     const item = cart.find(item => item.id === productId);
     const product = products.find(p => p.id === productId);
     const qty = parseInt(quantity);
-    
-    if (item && qty > 0 && qty <= product.stock) {
-        item.quantity = qty;
-        updateCartDisplay();
-    } else if (qty <= 0) {
-        removeFromCart(productId);
-    } else {
-        alert('库存不足！');
-        updateCartDisplay();
+    if (qty>product.stock){
+        alert('库存不足，仍购买需待较长时间交货！');
     }
+    if (qty<=0){
+        removeFromCart(productId);
+    }
+    item.quantity=qty;
+    updateCartDisplay();
 }
 
 // 从购物车移除商品
@@ -213,6 +225,26 @@ function closeCart() {
     
     sidebar.classList.remove('open');
     overlay.classList.remove('active');
+}
+
+// 保存购物车到数据库
+function saveCartToDB() {
+    fetch('/save_cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cart })
+    })
+    .then(response=>response.json())
+    .then(data=>{
+        if (!data.success){
+            throw new Error(data.message);
+        }
+    })
+    .catch(error=>{
+        console.error('保存购物车出错',error);
+    });
 }
 
 // 显示结算模态框
@@ -262,33 +294,47 @@ function confirmOrder() {
         alert('购物车是空的！');
         return;
     }
-    
+
     // 生成订单号
     const orderNumber = 'WMS' + Date.now();
     const orderDate = new Date().toLocaleString('zh-CN');
     const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
+
     // 生成购买清单
     const orderDetails = {
         orderNumber: orderNumber,
         orderDate: orderDate,
-        customerName: '客户用户',
         items: [...cart],
         totalAmount: totalAmount,
-        status: '已确认'
+        status: '待处理'
     };
-    
-    // 模拟提交订单到后端
-    console.log('订单详情:', orderDetails);
-    
-    // 显示订单成功页面
-    showOrderSuccess(orderDetails);
-    
-    // 清空购物车
-    cart = [];
-    updateCartDisplay();
-    closeCheckoutModal();
-    closeCart();
+
+    // 发送订单数据到后端保存
+    fetch('/save_order', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ items: cart })
+    })
+   .then(response => response.json())
+   .then(data => {
+        if (data.success) {
+            // 显示订单成功页面
+            showOrderSuccess(orderDetails);
+
+            // 清空购物车
+            cart = [];
+            updateCartDisplay();
+            closeCart();
+        } else {
+            alert('订单保存失败: ' + data.error);
+        }
+    })
+   .catch(error => {
+        console.error('保存订单出错', error);
+        alert('保存订单出错，请稍后重试');
+    });
 }
 
 // 显示订单成功页面
@@ -306,7 +352,6 @@ function showOrderSuccess(orderDetails) {
                 <h3 style="color: #2c3e50; margin-bottom: 1rem;">订单信息</h3>
                 <div style="margin-bottom: 0.5rem;"><strong>订单号:</strong> ${orderDetails.orderNumber}</div>
                 <div style="margin-bottom: 0.5rem;"><strong>下单时间:</strong> ${orderDetails.orderDate}</div>
-                <div style="margin-bottom: 0.5rem;"><strong>客户:</strong> ${orderDetails.customerName}</div>
                 <div style="margin-bottom: 1rem;"><strong>订单状态:</strong> <span style="color: #27ae60;">${orderDetails.status}</span></div>
                 
                 <h4 style="color: #2c3e50; margin-bottom: 1rem;">商品清单</h4>
@@ -314,7 +359,7 @@ function showOrderSuccess(orderDetails) {
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #eee;">
                         <div>
                             <div style="font-weight: 600;">${item.name}</div>
-                            <div style="color: #666; font-size: 0.9em;">单价: ¥${item.price.toFixed(2)} × ${item.quantity}</div>
+                            <div style="color: #666; font-size: 0.9em;">单价: ¥${item.price} × ${item.quantity}</div>
                         </div>
                         <div style="font-weight: bold; color: #e74c3c;">
                             ¥${(item.price * item.quantity).toFixed(2)}
@@ -331,13 +376,6 @@ function showOrderSuccess(orderDetails) {
             </div>
             
             <div style="display: flex; gap: 1rem; justify-content: center;">
-                <button onclick="printOrder('${orderDetails.orderNumber}')" 
-                        style="padding: 0.75rem 1.5rem; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
-                    打印订单
-                </button>
-                <button onclick="downloadOrder('${orderDetails.orderNumber}')" 
-                        style="padding: 0.75rem 1.5rem; background: #f39c12; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
-                    下载订单
                 </button>
                 <button onclick="closeOrderSuccess()" 
                         style="padding: 0.75rem 1.5rem; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
@@ -347,16 +385,8 @@ function showOrderSuccess(orderDetails) {
         </div>
     `;
     
-    // 保存订单到本地存储（模拟数据库）
-    saveOrderToStorage(orderDetails);
 }
 
-// 保存订单到本地存储
-function saveOrderToStorage(orderDetails) {
-    let orders = JSON.parse(localStorage.getItem('customerOrders') || '[]');
-    orders.push(orderDetails);
-    localStorage.setItem('customerOrders', JSON.stringify(orders));
-}
 
 // 关闭订单成功页面
 function closeOrderSuccess() {
@@ -377,145 +407,100 @@ function closeOrderSuccess() {
     `;
 }
 
-// 打印订单
-function printOrder(orderNumber) {
-    const orders = JSON.parse(localStorage.getItem('customerOrders') || '[]');
-    const order = orders.find(o => o.orderNumber === orderNumber);
+
+// 全局变量：模态框元素（避免重复创建）
+let ordersModal = null;
+
+// 打开订单模态框
+async function openOrdersModal() {
+    // 首次创建模态框
+    if (!ordersModal) {
+        ordersModal = document.createElement('div');
+        ordersModal.className = 'orders-modal';
+        ordersModal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>我的订单</h2>
+                    <button class="modal-close" onclick="closeOrdersModal()">&times;</button>
+                </div>
+                <div class="modal-body" id="ordersBody"></div>
+            </div>
+        `;
+        document.body.appendChild(ordersModal);
+    }
+
+    // 显示加载状态
+    document.getElementById('ordersBody').innerHTML = '<div class="loading">加载中...</div>';
     
-    if (!order) {
-        alert('订单未找到！');
+    try {
+        // 获取订单数据
+        const response = await fetch('/orders');
+        const orders = await response.json();
+        // 渲染订单列表
+        renderOrders(orders);
+        // 显示模态框
+        ordersModal.style.display = 'flex';
+    } catch (error) {
+        console.error('加载订单失败:', error);
+        document.getElementById('ordersBody').innerHTML = '<div class="error">加载失败，请重试</div>';
+    }
+}
+
+// 关闭订单模态框
+function closeOrdersModal() {
+    if (ordersModal) {
+        ordersModal.style.display = 'none';
+        // 清空内容以便下次加载
+        document.getElementById('ordersBody').innerHTML = '';
+    }
+}
+
+// 渲染订单数据
+function renderOrders(orders) {
+    const ordersBody = document.getElementById('ordersBody');
+    ordersBody.innerHTML = '';
+
+    if (orders.length === 0) {
+        ordersBody.innerHTML = '<div class="empty-orders">暂无订单记录</div>';
         return;
     }
-    
-    // 创建打印内容
-    const printContent = `
-        <html>
-        <head>
-            <title>订单打印 - ${order.orderNumber}</title>
-            <style>
-                body { font-family: 'Microsoft YaHei', Arial, sans-serif; margin: 20px; }
-                .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
-                .order-info { margin-bottom: 30px; }
-                .order-info div { margin-bottom: 8px; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-                th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-                th { background-color: #f5f5f5; font-weight: bold; }
-                .total { font-size: 1.2em; font-weight: bold; text-align: right; }
-                .footer { margin-top: 30px; text-align: center; color: #666; }
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h1>仓库管理系统</h1>
-                <h2>购买订单</h2>
-            </div>
-            
+
+    orders.forEach(order => {
+        const orderCard = document.createElement('div');
+        orderCard.className = 'order-card';
+        orderCard.innerHTML = `
             <div class="order-info">
-                <div><strong>订单号:</strong> ${order.orderNumber}</div>
-                <div><strong>下单时间:</strong> ${order.orderDate}</div>
-                <div><strong>客户:</strong> ${order.customerName}</div>
-                <div><strong>订单状态:</strong> ${order.status}</div>
+                <div><strong>订单号:</strong> ${order.order_number}</div>
+                <div><strong>下单时间:</strong> ${new Date(order.order_date).toLocaleString()}</div>
+                <div><strong>订单总额:</strong> ¥${parseFloat(order.total_amount).toFixed(2)}</div>
+                <div><strong>订单状态:</strong> ${getStatusText(order.status)}</div>
             </div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>商品名称</th>
-                        <th>单价</th>
-                        <th>数量</th>
-                        <th>小计</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <div class="order-items">
+                <h3>商品清单</h3>
+                <ul>
                     ${order.items.map(item => `
-                        <tr>
-                            <td>${item.name}</td>
-                            <td>¥${item.price.toFixed(2)}</td>
-                            <td>${item.quantity}</td>
-                            <td>¥${(item.price * item.quantity).toFixed(2)}</td>
-                        </tr>
+                        <li>${item.product_name} × ${item.quantity} = ¥${(parseFloat(item.price) * item.quantity).toFixed(2)}</li>
                     `).join('')}
-                </tbody>
-            </table>
-            
-            <div class="total">
-                订单总额: ¥${order.totalAmount.toFixed(2)}
+                </ul>
             </div>
-            
-            <div class="footer">
-                <p>感谢您的购买！</p>
-                <p>如有问题请联系客服</p>
-            </div>
-        </body>
-        </html>
-    `;
-    
-    // 打开打印窗口
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.print();
+        `;
+        ordersBody.appendChild(orderCard);
+    });
 }
 
-// 下载订单
-function downloadOrder(orderNumber) {
-    const orders = JSON.parse(localStorage.getItem('customerOrders') || '[]');
-    const order = orders.find(o => o.orderNumber === orderNumber);
-    
-    if (!order) {
-        alert('订单未找到！');
-        return;
-    }
-    
-    // 创建订单文本内容
-    const orderText = `
-仓库管理系统 - 购买订单
-
-订单信息:
-订单号: ${order.orderNumber}
-下单时间: ${order.orderDate}
-客户: ${order.customerName}
-订单状态: ${order.status}
-
-商品清单:
-${order.items.map(item => 
-`${item.name} - 单价: ¥${item.price.toFixed(2)} × ${item.quantity} = ¥${(item.price * item.quantity).toFixed(2)}`
-).join('\n')}
-
-订单总额: ¥${order.totalAmount.toFixed(2)}
-
-感谢您的购买！
-如有问题请联系客服
-    `.trim();
-    
-    // 创建并下载文件
-    const blob = new Blob([orderText], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `订单_${order.orderNumber}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+// 状态转换函数（保持不变）
+function getStatusText(status) {
+    const statusMap = {
+        '待处理': '待处理',
+        '处理中': '处理中',
+        '已完成': '已完成',
+        '已取消': '已取消'
+    };
+    return statusMap[status] || status;
 }
-
 // 退出登录
 function logout() {
-    alert('即将返回登陆界面')
-    window.location.href='/logout'
+    alert('即将返回登陆界面');
+    saveCartToDB();
+    window.location.href='/logout';
 }
-
-// 页面关闭前保存购物车
-window.addEventListener('beforeunload', function() {
-    localStorage.setItem('customerCart', JSON.stringify(cart));
-});
-
-// 页面加载时恢复购物车
-window.addEventListener('load', function() {
-    const savedCart = localStorage.getItem('customerCart');
-    if (savedCart) {
-        cart = JSON.parse(savedCart);
-        updateCartDisplay();
-    }
-});

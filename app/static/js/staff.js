@@ -42,11 +42,8 @@ function showSection(sectionId) {
 
 // 退出登录
 function logout() {
-    if (confirm('确定要退出登录吗？')) {
-        alert('已退出登录，即将跳转到登录页面...');
-        // 这里可以添加实际的登出逻辑
-        // window.location.href = '/login';
-    }
+    alert('即将返回登陆界面');
+    window.location.href='/logout';
 }
 
 // 修改开始：打开添加员工模态框
