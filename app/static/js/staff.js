@@ -33,6 +33,11 @@ function showSection(sectionId) {
         'supply-list': '供货清单'
     };
     document.querySelector('.header-title').textContent = titles[sectionId] || '管理员控制台';
+    // 修改开始：当切换到员工管理页面时，加载员工数据
+    if (sectionId === 'employees') {
+        fetchEmployees();
+    }
+    // 修改结束
 }
 
 // 退出登录
@@ -44,11 +49,13 @@ function logout() {
     }
 }
 
-// 员工管理功能
-function addEmployee() {
-    alert('打开添加员工表单...');
-    // 这里可以实现模态框或跳转到添加页面
+// 修改开始：打开添加员工模态框
+//员工管理功能
+function openAddEmployeeModal() {
+    document.getElementById('addEmployeeForm').reset(); // 清空表单
+    document.getElementById('addEmployeeModal').style.display = 'flex'; // 使用 flex 布局居中
 }
+// 修改结束
 
 function exportEmployees() {
     alert('正在导出员工数据...');
@@ -113,6 +120,152 @@ function sendSupplyList() {
 function exportSupplyList() {
     alert('正在导出供货清单...');
 }
+// 修改开始：模态框控制函数
+function openModal(modalId) {
+    document.getElementById(modalId).style.display = 'flex';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+// 修改结束
+// 修改开始：获取员工数据并填充表格
+async function fetchEmployees() {
+    try {
+        const response = await fetch('/staff/employees'); // 从后端获取员工数据
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const employees = await response.json();
+        const tbody = document.querySelector('#employees-table tbody');
+        tbody.innerHTML = ''; // 清空现有内容
+
+        employees.forEach(employee => {
+            const row = tbody.insertRow();
+            row.dataset.staffNum = employee.Staff_Num; // 存储工号以便编辑和删除
+
+            row.insertCell().textContent = employee.Staff_Num;
+            row.insertCell().textContent = employee.Staff_Name;
+            row.insertCell().textContent = employee.Staff_Position;
+            row.insertCell().textContent = employee.Is_On_Duty === 1 ? '在职' : '离职';
+
+            const actionsCell = row.insertCell();
+            const editButton = document.createElement('button');
+            editButton.className = 'btn btn-edit';
+            editButton.textContent = '编辑';
+            editButton.onclick = () => editRow(employee); // 直接传递员工对象
+            actionsCell.appendChild(editButton);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'btn btn-delete';
+            deleteButton.textContent = '删除';
+            deleteButton.onclick = () => deleteRow(employee.Staff_Num); // 直接传递工号
+            actionsCell.appendChild(deleteButton);
+        });
+    } catch (error) {
+        console.error('获取员工数据失败:', error);
+        alert('获取员工数据失败，请稍后再试。');
+    }
+}
+// 修改结束
+// 修改开始：添加员工表单提交
+document.addEventListener('DOMContentLoaded', () => { // 确保在 DOM 加载后绑定事件
+    const addEmployeeForm = document.getElementById('addEmployeeForm');
+    if (addEmployeeForm) {
+        addEmployeeForm.addEventListener('submit', submitAddEmployeeForm);
+    }
+
+    const editEmployeeForm = document.getElementById('editEmployeeForm');
+    if (editEmployeeForm) {
+        editEmployeeForm.addEventListener('submit', submitEditEmployeeForm);
+    }
+
+    // 页面加载完成后的初始化操作
+    console.log('仓库管理系统已启动');
+    
+    // 初始加载员工数据 (如果员工管理是默认显示或在需要时手动调用)
+    // fetchEmployees(); // 可以在 showSection('employees') 中调用
+});
+
+async function submitAddEmployeeForm(event) {
+    event.preventDefault(); // 阻止表单默认提交行为
+
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = {};
+    for (let [key, value] of formData.entries()) {
+        data[key] = value;
+    }
+    // 将 Is_On_Duty 转换为整数
+    data['Is_On_Duty'] = parseInt(data['Is_On_Duty'], 10);
+
+    try {
+        const response = await fetch('/staff/add_employee', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert(result.message);
+            closeModal('addEmployeeModal');
+            fetchEmployees(); // 重新加载员工列表
+        } else {
+            alert('添加员工失败: ' + result.error);
+        }
+    } catch (error) {
+        console.error('添加员工请求失败:', error);
+        alert('添加员工失败，请检查网络连接。');
+    }
+}
+// 修改结束
+// 修改开始：编辑员工表单提交
+async function submitEditEmployeeForm(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const staffNum = document.getElementById('editStaffNum').value; // 获取工号
+    const formData = new FormData(form);
+    const data = {};
+    for (let [key, value] of formData.entries()) {
+        data[key] = value;
+    }
+    // 将 Is_On_Duty 转换为整数
+    data['Is_On_Duty'] = parseInt(data['Is_On_Duty'], 10);
+
+    // 如果密码为空，则不发送密码字段
+    if (!data['Password']) {
+        delete data['Password'];
+    }
+
+    try {
+        const response = await fetch(`/staff/edit_employee/${staffNum}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert(result.message);
+            closeModal('editEmployeeModal');
+            fetchEmployees(); // 重新加载员工列表
+        } else {
+            alert('编辑员工失败: ' + result.error);
+        }
+    } catch (error) {
+        console.error('编辑员工请求失败:', error);
+        alert('编辑员工失败，请检查网络连接。');
+    }
+}
+// 修改结束
 
 // 初始化页面
 document.addEventListener('DOMContentLoaded', function() {
@@ -148,20 +301,42 @@ function performSearch(keyword) {
     alert('搜索功能开发中，关键词：' + keyword);
 }
 
-// 表格编辑功能
-function editRow(button) {
-    const row = button.closest('tr');
-    alert('编辑功能开发中...');
-}
+// 修改开始：表格编辑功能
+function editRow(employee) {
+    // 填充编辑模态框
+    document.getElementById('editStaffNum').value = employee.Staff_Num;
+    document.getElementById('editStaffName').value = employee.Staff_Name;
+    document.getElementById('editStaffPosition').value = employee.Staff_Position;
+    document.getElementById('editIsOnDuty').value = employee.Is_On_Duty;
+    document.getElementById('editPassword').value = ''; // 清空密码，让用户选择是否修改
 
-// 表格删除功能
-function deleteRow(button) {
-    if (confirm('确定要删除这条记录吗？')) {
-        const row = button.closest('tr');
-        row.remove();
-        alert('删除成功！');
+    openModal('editEmployeeModal');
+}
+// 修改结束
+
+// 修改开始：表格删除功能
+async function deleteRow(staffNum) {
+    if (confirm(`确定要删除工号为 ${staffNum} 的员工吗？`)) {
+        try {
+            const response = await fetch(`/staff/delete_employee/${staffNum}`, {
+                method: 'DELETE'
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert(result.message);
+                fetchEmployees(); // 重新加载员工列表
+            } else {
+                alert('删除失败: ' + result.error);
+            }
+        } catch (error) {
+            console.error('删除员工请求失败:', error);
+            alert('删除员工失败，请检查网络连接。');
+        }
     }
 }
+// 修改结束
 
 // 动态更新统计数据
 function updateStats() {

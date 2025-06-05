@@ -118,8 +118,8 @@
                 <div class="section" id="employees">
                     <h2 class="section-title">员工管理</h2>
                     <div class="btn-group">
-                        <button class="btn" onclick="addEmployee()">+ 添加员工</button>
-                        <button class="btn" onclick="exportEmployees()">📥 导出数据</button>
+                        <button class="btn" onclick="openAddEmployeeModal()">+ 添加员工</button>                                              <!--修改(addEmployee)-->
+                        <button class="btn" onclick="exportEmployees()">📥 导出数据</button>                                         
                     </div>
                     
                     <div class="search-box">
@@ -128,16 +128,13 @@
                     </div>
 
                     <div class="table-container">
-                        <table>
+                        <table id="employees-table">
                             <thead>
                                 <tr>
                                     <th>工号</th>
                                     <th>姓名</th>
-                                    <th>部门</th>
                                     <th>职位</th>
-                                    <th>权限</th>
-                                    <th>电话</th>
-                                    <th>状态</th>
+                                    <th>在职状态</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
@@ -145,10 +142,10 @@
                                 <tr>
                                     <td>E001</td>
                                     <td>张三</td>
-                                    <td>管理部</td>
+                                    <!-- <td>管理部</td> -->
                                     <td>系统管理员</td>
-                                    <td>管理员</td>
-                                    <td>138****1234</td>
+                                    <!-- <td>管理员</td> -->
+                                    <!-- <td>138****1234</td> -->
                                     <td>在职</td>
                                     <td>
                                         <button class="btn btn-edit">编辑</button>
@@ -158,10 +155,10 @@
                                 <tr>
                                     <td>E002</td>
                                     <td>李四</td>
-                                    <td>仓储部</td>
+                                    <!-- <td>仓储部</td> -->
                                     <td>仓管员</td>
-                                    <td>普通员工</td>
-                                    <td>139****5678</td>
+                                    <!-- <td>普通员工</td> -->
+                                    <!-- <td>139****5678</td> -->
                                     <td>在职</td>
                                     <td>
                                         <button class="btn btn-edit">编辑</button>
@@ -171,10 +168,10 @@
                                 <tr>
                                     <td>E003</td>
                                     <td>王五</td>
-                                    <td>销售部</td>
+                                    <!-- <td>销售部</td> -->
                                     <td>销售专员</td>
-                                    <td>普通员工</td>
-                                    <td>136****9012</td>
+                                    <!-- <td>普通员工</td> -->
+                                    <!-- <td>136****9012</td> -->
                                     <td>在职</td>
                                     <td>
                                         <button class="btn btn-edit">编辑</button>
@@ -575,6 +572,78 @@
             </div>
         </div>
     </div>
+<!-- 修改内容开始 -->
+    <div id="addEmployeeModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('addEmployeeModal')">&times;</span>
+            <h3>添加新员工</h3>
+            <form id="addEmployeeForm">
+                <div class="form-group">
+                    <label for="addStaffNum" class="form-label">工号:</label>
+                    <input type="text" id="addStaffNum" name="Staff_Num" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="addStaffName" class="form-label">姓名:</label>
+                    <input type="text" id="addStaffName" name="Staff_Name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="addStaffPosition" class="form-label">职位:</label>
+                    <input type="text" id="addStaffPosition" name="Staff_Position" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="addIsOnDuty" class="form-label">在职状态:</label>
+                    <select id="addIsOnDuty" name="Is_On_Duty" class="form-input" required>
+                        <option value="1">在职</option>
+                        <option value="0">离职</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="addPassword" class="form-label">密码:</label>
+                    <input type="password" id="addPassword" name="Password" class="form-input" required>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn">提交</button>
+                    <button type="button" class="btn" style="background: #6c757d;" onclick="closeModal('addEmployeeModal')">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="editEmployeeModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('editEmployeeModal')">&times;</span>
+            <h3>编辑员工信息</h3>
+            <form id="editEmployeeForm">
+                <div class="form-group">
+                    <label for="editStaffNum" class="form-label">工号:</label>
+                    <input type="text" id="editStaffNum" name="Staff_Num" class="form-input" readonly> </div>
+                <div class="form-group">
+                    <label for="editStaffName" class="form-label">姓名:</label>
+                    <input type="text" id="editStaffName" name="Staff_Name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="editStaffPosition" class="form-label">职位:</label>
+                    <input type="text" id="editStaffPosition" name="Staff_Position" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="editIsOnDuty" class="form-label">在职状态:</label>
+                    <select id="editIsOnDuty" name="Is_On_Duty" class="form-input" required>
+                        <option value="1">在职</option>
+                        <option value="0">离职</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editPassword" class="form-label">密码 (留空则不修改):</label>
+                    <input type="password" id="editPassword" name="Password" class="form-input">
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn">保存</button>
+                    <button type="button" class="btn" style="background: #6c757d;" onclick="closeModal('editEmployeeModal')">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- 修改内容结束 -->
     <script src="{{url_for('static',filename='js/staff.js')}}"></script>
 </body>
 </html>
