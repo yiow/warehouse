@@ -17,10 +17,13 @@ def create_app(config_name='default'):
     from app.routes.customer import customer_bp
     from app.routes.supplier import supplier_bp
     from app.routes.staff import staff_bp
+    from app.routes.remover import remover_bp
+
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(customer_bp)
     app.register_blueprint(supplier_bp)
     app.register_blueprint(staff_bp)
-    
+    app.register_blueprint(remover_bp)
+
     return app

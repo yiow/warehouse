@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>仓库管理系统 - 员工界面</title>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/remover.css')}}">
+</head>
+<body>
+    <header class="header">
+        <div class="logo">仓库管理系统</div>
+        <div class="user-info">
+            <span>欢迎您，<strong id="employeeName">张三</strong> (仓库员工)</span>
+            <button class="logout-btn" onclick="logout()">退出登录</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- 待处理通知区域 -->
+        <div class="notification-area">
+            <div class="notification-header">
+                <h2 class="notification-title">待处理任务</h2>
+                <span class="notification-count" id="pendingCount">3</span>
+            </div>
+            
+            <div id="pendingNotifications">
+                <div class="notification-item urgent" data-id="1">
+                    <div class="notification-meta">
+                        <span class="notification-type type-out">出库</span>
+                        <span class="notification-time">2024-12-20 10:30</span>
+                    </div>
+                    <div class="notification-content">
+                        <strong>紧急出库通知</strong>
+                        <div class="product-info">
+                            <div><strong>产品名称：</strong>苹果手机 iPhone 15</div>
+                            <div><strong>产品编号：</strong>P001-iPhone15</div>
+                            <div><strong>数量：</strong>50 台</div>
+                            <div><strong>目标位置：</strong>A区-2号货架</div>
+                            <div><strong>客户：</strong>电子商城有限公司</div>
+                        </div>
+                    </div>
+                    <button class="confirm-btn" onclick="confirmTask(1, 'out')">确认出库完成</button>
+                </div>
+
+                <div class="notification-item" data-id="2">
+                    <div class="notification-meta">
+                        <span class="notification-type type-in">入库</span>
+                        <span class="notification-time">2024-12-20 09:15</span>
+                    </div>
+                    <div class="notification-content">
+                        <strong>入库通知</strong>
+                        <div class="product-info">
+                            <div><strong>产品名称：</strong>笔记本电脑 ThinkPad X1</div>
+                            <div><strong>产品编号：</strong>P002-ThinkPadX1</div>
+                            <div><strong>数量：</strong>20 台</div>
+                            <div><strong>存放位置：</strong>B区-5号货架</div>
+                            <div><strong>供应商：</strong>联想科技有限公司</div>
+                        </div>
+                    </div>
+                    <button class="confirm-btn" onclick="confirmTask(2, 'in')">确认入库完成</button>
+                </div>
+
+                <div class="notification-item" data-id="3">
+                    <div class="notification-meta">
+                        <span class="notification-type type-out">出库</span>
+                        <span class="notification-time">2024-12-20 08:45</span>
+                    </div>
+                    <div class="notification-content">
+                        <strong>出库通知</strong>
+                        <div class="product-info">
+                            <div><strong>产品名称：</strong>无线耳机 AirPods Pro</div>
+                            <div><strong>产品编号：</strong>P003-AirPodsPro</div>
+                            <div><strong>数量：</strong>100 副</div>
+                            <div><strong>目标位置：</strong>C区-1号货架</div>
+                            <div><strong>客户：</strong>数码商城连锁店</div>
+                        </div>
+                    </div>
+                    <button class="confirm-btn" onclick="confirmTask(3, 'out')">确认出库完成</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 已完成任务区域 -->
+        <div class="completed-section">
+            <div class="notification-header">
+                <h2 class="notification-title">今日已完成任务</h2>
+                <span class="notification-count" style="background: #28a745;" id="completedCount">2</span>
+            </div>
+            
+            <div id="completedNotifications">
+                <div class="completed-item">
+                    <div class="notification-meta">
+                        <span class="notification-type type-in">入库</span>
+                        <span class="notification-time">已完成 - 2024-12-20 07:30</span>
+                    </div>
+                    <div class="notification-content">
+                        <strong>入库任务</strong>
+                        <div class="product-info">
+                            <div><strong>产品名称：</strong>智能手表 Apple Watch</div>
+                            <div><strong>产品编号：</strong>P004-AppleWatch</div>
+                            <div><strong>数量：</strong>30 块</div>
+                            <div><strong>状态：</strong><span class="status-completed">✓ 已确认完成</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="completed-item">
+                    <div class="notification-meta">
+                        <span class="notification-type type-out">出库</span>
+                        <span class="notification-time">已完成 - 2024-12-20 06:45</span>
+                    </div>
+                    <div class="notification-content">
+                        <strong>出库任务</strong>
+                        <div class="product-info">
+                            <div><strong>产品名称：</strong>蓝牙音箱 JBL</div>
+                            <div><strong>产品编号：</strong>P005-JBL</div>
+                            <div><strong>数量：</strong>25 个</div>
+                            <div><strong>状态：</strong><span class="status-completed">✓ 已确认完成</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{url_for('static',filename='js/remover.js')}}"></script>
+</body>
+</html>
