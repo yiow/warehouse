@@ -8,7 +8,7 @@ def authenticate_user(user_type, username, password):
                 sql = "SELECT Customer_Num AS id, Customer_UserName AS username, Password FROM customers WHERE Customer_UserName=%s"
             elif user_type == 'supplier':
                 sql = "SELECT Supplier_Num AS id, Supplier_UserName AS username, Password FROM suppliers WHERE Supplier_UserName=%s"
-            elif user_type == 'staff':
+            elif user_type == 'staff' or user_type == 'remover':
                 sql = "SELECT Staff_Num AS id, Staff_Name AS username, Password FROM staff WHERE Staff_Name=%s"
             else:
                 return {'success': False, 'message': '无效的用户类型'}, 400

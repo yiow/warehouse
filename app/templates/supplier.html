@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>仓库管理系统 - 供应商中心</title>
-    <link rel="stylesheet" href="{{url_for('static',filename='static/supplier.css')}}">
+    <link rel="stylesheet" href="{{url_for('static',filename='css/supplier.css')}}">
 </head>
 <body>
     <!-- 头部导航 -->
@@ -21,7 +21,7 @@
                     🔔
                     <span class="badge-count" id="pendingCount">0</span>
                 </div>
-                <span>欢迎，供应商用户</span>
+                <span>欢迎{{user.username}}供应商用户</span>
                 <button class="logout-btn" onclick="logout()">退出登录</button>
             </div>
         </div>
@@ -163,6 +163,6 @@
         </div>
     </div>
 
-    <script src="{{url_for('static',filename='static/supplier.js')}}"></script>
+    <script src="{{url_for('static',filename='js/supplier.js')}}"></script>
 </body>
 </html>

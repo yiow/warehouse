@@ -63,6 +63,9 @@ document.addEventListener('DOMContentLoaded', function() {
           if (type=='supplier'){
             window.location.href = '/supplier';
           }
+          if (type=='remover'){
+            window.location.href = '/remover';
+          }
         }
         else{
           //显示错误信息

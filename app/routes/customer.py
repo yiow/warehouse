@@ -94,11 +94,4 @@ def get_orders():
         print(f'获取订单错误: {e}')
         return []
 
-# # 查看订单页面
-# @customer_bp.route('/orders', methods=['GET'])
-# def view_orders():
-#     user_info = {
-#         'username': session['username'],
-#         'userid': session['user_id']
-#     }
-#     return render_template('orders.html', user=user_info)
+

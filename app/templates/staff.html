@@ -46,9 +46,9 @@
             <div class="header">
                 <div class="header-title">管理员控制台</div>
                 <div class="user-info">
-                    <div class="user-avatar">张</div>
+                    <div class="user-avatar">{{user.username|first}}</div>
                     <div class="user-details">
-                        <div class="user-name">张三</div>
+                        <div class="user-name">{{user.username}}</div>
                         <div>管理员</div>
                     </div>
                     <button class="logout-btn" onclick="logout()">退出登录</button>

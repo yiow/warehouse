@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, g
+from flask import Blueprint, render_template, request, jsonify, g,session
 # 修改开始
 from app.services.staff_service import get_all_employees,add_employee,delete_employee,edit_employee
 # 修改结束
@@ -6,7 +6,11 @@ staff_bp = Blueprint('staff', __name__)
 
 @staff_bp.route('/staff',methods=['GET'])
 def customer():
-    return render_template('staff.html')
+    user_info={
+        'username':session['username'],
+        'userid':session['user_id']
+    }
+    return render_template('staff.html',user=user_info)
 
 # 修改开始：获取所有员工的路由
 @staff_bp.route('/staff/employees', methods=['GET'])

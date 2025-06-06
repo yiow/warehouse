@@ -84,14 +84,8 @@ function showNotification(message, type = 'info') {
 
 // 退出登录函数
 function logout() {
-    if (confirm('确定要退出登录吗？')) {
-        showNotification('正在退出登录...', 'info');
-        setTimeout(() => {
-            // 这里应该跳转到登录页面
-            alert('已退出登录！');
-            // window.location.href = '/login';
-        }, 1000);
-    }
+    alert('即将返回登陆界面');
+    window.location.href='/logout';
 }
 
 // 模拟接收新通知

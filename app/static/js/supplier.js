@@ -458,13 +458,8 @@ function showNotification(message, type = 'info') {
 
 // 退出登录
 function logout() {
-    if (confirm('确定要退出登录吗？')) {
-        // 清除数据
-        localStorage.removeItem('supplierData');
-        
-        alert('已退出登录');
-        // window.location.href = '/login.html';
-    }
+    alert('即将返回登陆界面');
+    window.location.href='/logout'
 }
 
 // 页面关闭前保存数据
