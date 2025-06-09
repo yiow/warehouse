@@ -24,59 +24,39 @@
             </div>
             
             <div id="pendingNotifications">
-                <div class="notification-item urgent" data-id="1">
-                    <div class="notification-meta">
-                        <span class="notification-type type-out">出库</span>
-                        <span class="notification-time">2024-12-20 10:30</span>
-                    </div>
-                    <div class="notification-content">
-                        <strong>紧急出库通知</strong>
-                        <div class="product-info">
-                            <div><strong>产品名称：</strong>苹果手机 iPhone 15</div>
-                            <div><strong>产品编号：</strong>P001-iPhone15</div>
-                            <div><strong>数量：</strong>50 台</div>
-                            <div><strong>目标位置：</strong>A区-2号货架</div>
-                            <div><strong>客户：</strong>电子商城有限公司</div>
+                <!-- {# 修改开始 - 使用 Jinja2 循环渲染待处理任务 #} -->
+                {% if pending_tasks %}
+                    {% for task in pending_tasks %}
+                        <div class="notification-item {% if loop.index == 1 %}urgent{% endif %}" data-good-num="{{ task.Good_Num }}">
+                            <div class="notification-meta">
+                                <span class="notification-type type-{% if task.Type == 0 %}out{% else %}in{% endif %}">
+                                    {% if task.Type == 0 %}出库{% else %}入库{% endif %}
+                                </span>
+                                <span class="notification-time">{{ task.TIME }}</span>
+                            </div>
+                            <div class="notification-content">
+                                <strong>{% if task.Type == 0 %}出库通知{% else %}入库通知{% endif %}</strong>
+                                <div class="product-info">
+                                    <div><strong>产品名称：</strong>{{ task.Good_Name }}</div>
+                                    <div><strong>产品编号：</strong>{{ task.Good_Num }}</div>
+                                    <div><strong>数量：</strong>{{ task.Good_Quantity }}</div>
+                                    <div><strong>仓位位置：</strong>{{ task.Position_Num }}</div>
+                                    <!-- {# 原始页面中有供应商/客户信息，但数据库中未提供。如果需要，请在数据库中添加或根据逻辑推断 #} -->
+                                    {# <div><strong>{% if task.Type == 0 %}客户{% else %}供应商{% endif %}：</strong>这里是客户/供应商信息</div> #}
+                                </div>
+                            </div>
+                            <button class="confirm-btn" onclick="confirmTask({{ task.Good_Num }}, '{% if task.Type == 0 %}out{% else %}in{% endif %}')">
+                                确认{% if task.Type == 0 %}出库{% else %}入库{% endif %}完成
+                            </button>
                         </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <span class="empty-icon">🎉</span>
+                        <p>暂无待处理任务！</p>
                     </div>
-                    <button class="confirm-btn" onclick="confirmTask(1, 'out')">确认出库完成</button>
-                </div>
-
-                <div class="notification-item" data-id="2">
-                    <div class="notification-meta">
-                        <span class="notification-type type-in">入库</span>
-                        <span class="notification-time">2024-12-20 09:15</span>
-                    </div>
-                    <div class="notification-content">
-                        <strong>入库通知</strong>
-                        <div class="product-info">
-                            <div><strong>产品名称：</strong>笔记本电脑 ThinkPad X1</div>
-                            <div><strong>产品编号：</strong>P002-ThinkPadX1</div>
-                            <div><strong>数量：</strong>20 台</div>
-                            <div><strong>存放位置：</strong>B区-5号货架</div>
-                            <div><strong>供应商：</strong>联想科技有限公司</div>
-                        </div>
-                    </div>
-                    <button class="confirm-btn" onclick="confirmTask(2, 'in')">确认入库完成</button>
-                </div>
-
-                <div class="notification-item" data-id="3">
-                    <div class="notification-meta">
-                        <span class="notification-type type-out">出库</span>
-                        <span class="notification-time">2024-12-20 08:45</span>
-                    </div>
-                    <div class="notification-content">
-                        <strong>出库通知</strong>
-                        <div class="product-info">
-                            <div><strong>产品名称：</strong>无线耳机 AirPods Pro</div>
-                            <div><strong>产品编号：</strong>P003-AirPodsPro</div>
-                            <div><strong>数量：</strong>100 副</div>
-                            <div><strong>目标位置：</strong>C区-1号货架</div>
-                            <div><strong>客户：</strong>数码商城连锁店</div>
-                        </div>
-                    </div>
-                    <button class="confirm-btn" onclick="confirmTask(3, 'out')">确认出库完成</button>
-                </div>
+                {% endif %}
+                <!-- {# 修改结束 #} -->
             </div>
         </div>
 
@@ -88,37 +68,35 @@
             </div>
             
             <div id="completedNotifications">
-                <div class="completed-item">
-                    <div class="notification-meta">
-                        <span class="notification-type type-in">入库</span>
-                        <span class="notification-time">已完成 - 2024-12-20 07:30</span>
-                    </div>
-                    <div class="notification-content">
-                        <strong>入库任务</strong>
-                        <div class="product-info">
-                            <div><strong>产品名称：</strong>智能手表 Apple Watch</div>
-                            <div><strong>产品编号：</strong>P004-AppleWatch</div>
-                            <div><strong>数量：</strong>30 块</div>
-                            <div><strong>状态：</strong><span class="status-completed">✓ 已确认完成</span></div>
+                <!-- {# 修改开始 - 使用 Jinja2 循环渲染已完成任务 #} -->
+                {% if completed_tasks %}
+                    {% for task in completed_tasks %}
+                        <div class="completed-item">
+                            <div class="notification-meta">
+                                <span class="notification-type type-{% if task.Type == 0 %}out{% else %}in{% endif %}">
+                                    {% if task.Type == 0 %}出库{% else %}入库{% endif %}
+                                </span>
+                                <span class="notification-time">已完成 - {{ task.TIME }}</span>
+                            </div>
+                            <div class="notification-content">
+                                <strong>{% if task.Type == 0 %}出库任务{% else %}入库任务{% endif %}</strong>
+                                <div class="product-info">
+                                    <div><strong>产品名称：</strong>{{ task.Good_Name }}</div>
+                                    <div><strong>产品编号：</strong>{{ task.Good_Num }}</div>
+                                    <div><strong>数量：</strong>{{ task.Good_Quantity }}</div>
+                                    <div><strong>仓位位置：</strong>{{ task.Position_Num }}</div>
+                                    <div><strong>状态：</strong><span class="status-completed">✓ 已确认完成</span></div>
+                                </div>
+                            </div>
                         </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <span class="empty-icon">✨</span>
+                        <p>暂无已完成任务。</p>
                     </div>
-                </div>
-
-                <div class="completed-item">
-                    <div class="notification-meta">
-                        <span class="notification-type type-out">出库</span>
-                        <span class="notification-time">已完成 - 2024-12-20 06:45</span>
-                    </div>
-                    <div class="notification-content">
-                        <strong>出库任务</strong>
-                        <div class="product-info">
-                            <div><strong>产品名称：</strong>蓝牙音箱 JBL</div>
-                            <div><strong>产品编号：</strong>P005-JBL</div>
-                            <div><strong>数量：</strong>25 个</div>
-                            <div><strong>状态：</strong><span class="status-completed">✓ 已确认完成</span></div>
-                        </div>
-                    </div>
-                </div>
+                {% endif %}
+                <!-- {# 修改结束 #} -->
             </div>
         </div>
     </div>

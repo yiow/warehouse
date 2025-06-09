@@ -238,3 +238,20 @@ body {
     font-size: 3rem;
     margin-bottom: 1rem;
 }
+/* 修改开始 - 空状态样式 */
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+    background-color: #f0f4f7; /* 轻微背景色 */
+    border-radius: 8px;
+    margin-top: 1rem;
+    font-size: 1.1rem;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #95a5a6; /* 图标颜色 */
+}
+/* 修改结束 */
