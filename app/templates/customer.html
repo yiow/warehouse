@@ -13,8 +13,9 @@
         <div class="logo">仓库管理系统</div>
         <div class="nav-right">
             <!-- 查看订单按钮 -->
+            <button class="nav-btn" onclick="openProfileModal()">个人信息</button>
             <button class="nav-btn" onclick="openOrdersModal()">查看订单</button>
-
+            
             <!-- 购物车图标 -->
             <div class="cart-icon" onclick="toggleCart()">
                 🛒
@@ -86,6 +87,18 @@
                 <!-- 订单详情将通过JavaScript动态生成 -->
             </div>
             <button class="confirm-btn" onclick="confirmOrder()">确认下单</button>
+        </div>
+    </div>
+    <!--个人信息模态框-->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">个人信息</h2>
+                <button class="modal-close" onclick="closeProfileModal()">×</button>
+            </div>
+            <div class="modal-body" id="profileInfo">
+                <div class="loading">加载中...</div>
+            </div>
         </div>
     </div>
     <script src="{{url_for('static',filename='js/customer.js')}}"></script>

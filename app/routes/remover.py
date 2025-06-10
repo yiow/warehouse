@@ -28,7 +28,7 @@ def api_confirm_task():
     if task_good_num is None:
         return jsonify({'status': 'error', 'message': '缺少 Good_Num 参数'}), 400
 
-    if update_task_status(task_good_num, 'processed'): # 将 Good_Num 作为任务ID更新状态为 'completed'
+    if update_task_status(task_good_num, 'completed'): # 将 Good_Num 作为任务ID更新状态为 'completed'
         return jsonify({'status': 'success', 'message': '任务状态更新成功'})
     else:
         return jsonify({'status': 'error', 'message': '任务状态更新失败'}), 500

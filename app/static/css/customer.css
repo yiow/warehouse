@@ -448,6 +448,136 @@ body {
     color: #999;
 }
 
+#profileInfo div {
+    margin-bottom: 0.8rem;
+    font-size: 1.1em;
+    color: #444;
+}
+
+#profileInfo strong {
+    color: #2c3e50;
+    margin-right: 0.5rem;
+}
+
+#profileInfo .loading, #profileInfo .error {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    font-size: 1.2em;
+}
+
+.edit-profile-btn {
+    display: block; /* 独占一行 */
+    width: 100%;
+    padding: 12px 20px;
+    background-color: #3498db; /* 蓝色 */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1em;
+    margin-top: 25px; /* 与上方内容间距 */
+    transition: background-color 0.3s ease;
+}
+
+.edit-profile-btn:hover {
+    background-color: #2980b9;
+}
+
+/* 个人信息编辑模式 */
+.profile-edit-mode {
+    display: none; /* 默认隐藏，通过JS切换显示 */
+}
+
+.profile-field {
+    margin-bottom: 15px;
+    display: flex; /* 让 label 和 input 在一行 */
+    align-items: center; /* 垂直居中对齐 */
+}
+
+.profile-field label {
+    flex: 0 0 80px; /* 固定宽度，不伸缩 */
+    margin-right: 15px;
+    font-weight: bold;
+    color: #555;
+}
+
+.profile-field input[type="text"] {
+    flex-grow: 1; /* 占据剩余空间 */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    transition: border-color 0.3s ease;
+}
+
+.profile-field input[type="text"]:focus {
+    border-color: #3498db; /* 聚焦时边框变色 */
+    outline: none;
+}
+
+/* VIP 不可编辑状态的样式 */
+.profile-field #uneditableVip {
+    flex-grow: 1;
+    padding: 10px;
+    background-color: #f2f2f2; /* 浅灰色背景 */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    color: #777; /* 略显暗淡的文本颜色 */
+    font-style: italic; /* 斜体 */
+    font-size: 1em;
+    text-align: left;
+}
+
+/* 动作按钮容器 (保存/取消) */
+.profile-actions {
+    display: flex;
+    justify-content: space-between; /* 按钮之间有间距 */
+    gap: 15px; /* 按钮之间的间距 */
+    margin-top: 25px;
+}
+
+.save-profile-btn,
+.cancel-profile-btn {
+    flex-grow: 1; /* 平均分配空间 */
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.save-profile-btn {
+    background-color: #28a745; /* 绿色 */
+    color: white;
+}
+
+.save-profile-btn:hover {
+    background-color: #218838;
+}
+
+.cancel-profile-btn {
+    background-color: #dc3545; /* 红色 */
+    color: white;
+}
+
+.cancel-profile-btn:hover {
+    background-color: #c82333;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.95); }
+}
+
 .order-summary {
     margin-bottom: 2rem;
 }
