@@ -1,6 +1,6 @@
 class Config:
     SECRET_KEY = 'your-secret-key'
-    DB_HOST = '10.249.125.118'
+    DB_HOST = '10.150.95.227'
     DB_USER = 'root'
     DB_PASSWORD = 'root'
     DB_PORT = 3306

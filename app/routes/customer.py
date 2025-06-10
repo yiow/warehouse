@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify, g,session,redirect,url_for
-from app.services.customer_service import show_products,save_cart_service,load_cart_service,save_order_service,get_orders_service
+from app.services.customer_service import show_products,save_cart_service,load_cart_service,save_order_service,get_orders_service,create_return_order_service
 
 customer_bp = Blueprint('customer', __name__)
 
@@ -93,5 +93,25 @@ def get_orders():
     except Exception as e:
         print(f'获取订单错误: {e}')
         return []
+
+# 新增：创建退订单路由  <-- 从这里开始新增
+@customer_bp.route('/return_order', methods=['POST'])
+def return_order():
+    if 'user_id' not in session:
+        return jsonify({'error': '未授权访问'}), 401
+    
+    try:
+        data = request.get_json()
+        order_number = data.get('order_number')
+        user_id = session['user_id']
+
+        success = create_return_order_service(user_id, order_number)
+        if success:
+            return jsonify({'success': True, 'message': '退单申请已提交'})
+        else:
+            return jsonify({'success': False, 'error': '退单失败，请检查订单状态或联系客服'}), 500
+    except Exception as e:
+        print(f"退单请求处理失败: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 

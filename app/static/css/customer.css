@@ -577,3 +577,19 @@ body {
     background: #f8f9fa;
     border-radius: 4px;
 }
+
+.return-btn { /* Add this new style */
+    background: #f39c12; /* 橙色背景 */
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 1rem; /* 与上方内容保持间距 */
+    transition: background-color 0.3s ease;
+}
+
+.return-btn:hover { /* Add this new style */
+    background: #e67e22; /* 鼠标悬停时颜色变深 */
+}

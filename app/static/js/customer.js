@@ -468,6 +468,9 @@ function renderOrders(orders) {
     orders.forEach(order => {
         const orderCard = document.createElement('div');
         orderCard.className = 'order-card';
+        // Check if the order status allows returns (e.g., "已完成" - Completed)
+        const canReturn = order.status === '待处理'; // <-- 在这里新增这一行
+
         orderCard.innerHTML = `
             <div class="order-info">
                 <div><strong>订单号:</strong> ${order.order_number}</div>
@@ -483,7 +486,7 @@ function renderOrders(orders) {
                     `).join('')}
                 </ul>
             </div>
-        `;
+            ${canReturn ? `<button class="return-btn" onclick="returnOrder('${order.order_number}')">退订单</button>` : ''} `;
         ordersBody.appendChild(orderCard);
     });
 }
@@ -497,6 +500,30 @@ function getStatusText(status) {
         '已取消': '已取消'
     };
     return statusMap[status] || status;
+}
+// 新增：退订单函数  <-- 从这里开始新增
+async function returnOrder(orderNumber) {
+    if (confirm(`确定要退回订单 ${orderNumber} 吗？`)) {
+        try {
+            const response = await fetch('/return_order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ order_number: orderNumber })
+            });
+            const data = await response.json();
+            if (data.success) {
+                alert('退单申请成功！等待处理。');
+                openOrdersModal(); // 刷新订单列表
+            } else {
+                alert('退单失败: ' + data.error);
+            }
+        } catch (error) {
+            console.error('退单出错:', error);
+            alert('退单出错，请稍后重试');
+        }
+    }
 }
 // 退出登录
 function logout() {
