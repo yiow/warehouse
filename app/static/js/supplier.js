@@ -36,9 +36,9 @@ function closeModal(modalId) {
 // 页面加载时初始化
 document.addEventListener('DOMContentLoaded', function() {
     fetchSupplierGoods(); 
+    fetchSupplyRequests();
     displayRequests();
     updateStatistics();
-    updateNotificationBadge();
 });
 
 // 切换标签页
@@ -56,8 +56,8 @@ function switchTab(tabName) {
         fetchSupplierGoods(); // 加载供应商商品
     } else if (tabName === 'requests') {
         displayRequests();
-    } else if (tabName === 'statistics') {
-        updateStatistics();
+    } else if (tabId === 'products') {
+        fetchSupplierGoods();
     }
 }
 
@@ -261,131 +261,106 @@ function searchProducts() {
 
 
 
-// 显示供应请求
+// **新增 fetchSupplyRequests 函数**
+async function fetchSupplyRequests() {
+    console.log('正在获取供应请求...');
+    try {
+        const response = await fetch('/supplier/requests'); // 调用新的后端接口
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const requests = await response.json();
+        // 更新全局的 supplyRequests 变量
+        supplyRequests = requests;
+        displayRequests(); // 获取数据后渲染
+        updateNotificationBadge(); // 更新通知角标
+    } catch (error) {
+        console.error('获取供应请求失败:', error);
+        showNotification('获取供应请求失败，请稍后再试。', 'error');
+    }
+}
+
+
+// 修改 displayRequests 函数以渲染从后端获取的数据
 function displayRequests() {
-    const container = document.getElementById('requestsContainer');
-    
-    if (supplyRequests.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div style="font-size: 4em; margin-bottom: 1rem;">📋</div>
-                <p>暂无供应请求</p>
-                <p>仓库管理员会在需要商品时向您发送供应请求</p>
-            </div>
-        `;
+    const tableBody = document.getElementById('supplyRequestsTableBody');
+    const noRequestsMessage = document.getElementById('noRequestsMessage');
+    tableBody.innerHTML = ''; // 清空现有内容
+
+    if (!supplyRequests || supplyRequests.length === 0) {
+        if (noRequestsMessage) noRequestsMessage.style.display = 'block';
         return;
     }
+    if (noRequestsMessage) noRequestsMessage.style.display = 'none';
 
-    container.innerHTML = supplyRequests.map(request => {
-        const totalAmount = request.items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-        
-        let statusClass = '';
-        let statusText = '';
-        
-        switch (request.status) {
-            case 'pending':
-                statusClass = 'status-pending';
-                statusText = '待处理';
-                break;
-            case 'accepted':
-                statusClass = 'status-accepted';
-                statusText = '已接受';
-                break;
-            case 'rejected':
-                statusClass = 'status-rejected';
-                statusText = '已拒绝';
-                break;
+    supplyRequests.forEach(request => {
+        const row = tableBody.insertRow();
+        row.insertCell().textContent = request.Request_ID;
+        row.insertCell().textContent = request.Good_Num;
+        row.insertCell().textContent = request.Good_Name || '未知商品'; // 显示商品名称
+        row.insertCell().textContent = request.Request_Quantity;
+        row.insertCell().textContent = request.Matched_Price ? request.Matched_Price : 'N/A';
+        row.insertCell().textContent = request.Status;
+        row.insertCell().textContent = new Date(request.Request_Time).toLocaleString();
+
+        const actionsCell = row.insertCell();
+        // 根据请求状态添加操作按钮
+        if (request.Status === 'Matched' || request.Status === 'Pending') {
+            const acceptBtn = document.createElement('button');
+            acceptBtn.textContent = '接受';
+            acceptBtn.classList.add('btn', 'btn-primary', 'btn-small');
+            // TODO: 为接受按钮添加事件处理器，向后端发送接受请求
+            acceptBtn.onclick = () => handleRequestAction(request.Request_ID, 'accept');
+            actionsCell.appendChild(acceptBtn);
+
+            const rejectBtn = document.createElement('button');
+            rejectBtn.textContent = '拒绝';
+            rejectBtn.classList.add('btn', 'btn-secondary', 'btn-small');
+            // TODO: 为拒绝按钮添加事件处理器，向后端发送拒绝请求
+            rejectBtn.onclick = () => handleRequestAction(request.Request_ID, 'reject');
+            actionsCell.appendChild(rejectBtn);
+        } else {
+            actionsCell.textContent = '已处理';
         }
-
-        return `
-            <div class="request-card">
-                <div class="request-header">
-                    <div class="request-info">
-                        <div>
-                            <div class="request-id">请求编号: ${request.id}</div>
-                            <div class="request-date">请求时间: ${request.date}</div>
-                            <div style="margin-top: 0.5rem;">仓库编号: ${request.warehouseId}</div>
-                        </div>
-                        <div class="request-status ${statusClass}">${statusText}</div>
-                    </div>
-                </div>
-                
-                <div class="request-content">
-                    <div class="request-items">
-                        <h4 style="margin-bottom: 1rem; color: #2d3748;">需求商品清单</h4>
-                        ${request.items.map(item => `
-                            <div class="request-item">
-                                <div class="item-info">
-                                    <div class="item-name">${item.name}</div>
-                                    <div class="item-details">单价: ¥${item.unitPrice.toFixed(2)} | 小计: ¥${(item.quantity * item.unitPrice).toFixed(2)}</div>
-                                </div>
-                                <div class="item-quantity">需求: ${item.quantity} 件</div>
-                            </div>
-                        `).join('')}
-                        
-                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 2px solid #e2e8f0;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-weight: 600; color: #2d3748;">总金额</span>
-                                <span style="font-size: 1.2em; font-weight: bold; color: #e53e3e;">¥${totalAmount.toFixed(2)}</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    ${request.status === 'pending' ? `
-                        <div class="request-actions">
-                            <button class="btn btn-reject" onclick="handleRequest('${request.id}', 'rejected')">拒绝</button>
-                            <button class="btn btn-accept" onclick="handleRequest('${request.id}', 'accepted')">接受</button>
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-        `;
-    }).join('');
+    });
 }
 
-// 处理供应请求
-function handleRequest(requestId, action) {
-    const request = supplyRequests.find(r => r.id === requestId);
-    if (!request) return;
+// **处理请求操作的示例函数 (您需要根据实际需求实现后端API)**
+async function handleRequestAction(requestId, actionType) {
+    // 这是一个占位符，您需要根据业务逻辑和后端API来实现
+    console.log(`处理请求 ${requestId} 的操作: ${actionType}`);
+    try {
+        const response = await fetch(`/supplier/handle_request/${requestId}`, {
+            method: 'POST', // 或 PUT
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ action: actionType })
+        });
 
-    const actionText = action === 'accepted' ? '接受' : '拒绝';
-    
-    if (confirm(`确定要${actionText}这个供应请求吗？`)) {
-        request.status = action;
-        
-        if (action === 'accepted') {
-            // 如果接受请求，可以更新库存或生成供应单
-            generateSupplyOrder(request);
-            showNotification(`供应请求已接受，供应单已生成`, 'success');
-        } else {
-            showNotification(`供应请求已拒绝`, 'info');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
-        displayRequests();
-        updateStatistics();
-        updateNotificationBadge();
+        const result = await response.json();
+        showNotification(result.message, 'success');
+        fetchSupplyRequests(); // 刷新列表
+    } catch (error) {
+        console.error(`处理请求失败: ${error}`);
+        showNotification('处理请求失败，请检查网络或联系管理员。', 'error');
     }
 }
 
-// 生成供应单
-function generateSupplyOrder(request) {
-    const supplyOrder = {
-        orderId: 'SO' + Date.now(),
-        requestId: request.id,
-        date: new Date().toLocaleString('zh-CN'),
-        warehouseId: request.warehouseId,
-        items: request.items,
-        totalAmount: request.items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0),
-        status: '待发货'
-    };
 
-    // 保存供应单到本地存储
-    let supplyOrders = JSON.parse(localStorage.getItem('supplyOrders') || '[]');
-    supplyOrders.push(supplyOrder);
-    localStorage.setItem('supplyOrders', JSON.stringify(supplyOrders));
-
-    console.log('供应单已生成:', supplyOrder);
+// 修改 updateNotificationBadge 以基于后端数据计算未处理请求
+function updateNotificationBadge() {
+    const pendingCount = supplyRequests.filter(req => req.Status === 'Pending' || req.Status === 'Matched').length;
+    const badgeElement = document.getElementById('pendingCount');
+    if (badgeElement) {
+        badgeElement.textContent = pendingCount > 0 ? pendingCount : '0';
+        badgeElement.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+    }
 }
+
 
 // 更新统计数据
 function updateStatistics() {
@@ -486,27 +461,3 @@ window.addEventListener('load', function() {
     }
 });
 
-// 模拟接收新的供应请求（用于演示）
-function simulateNewRequest() {
-    const newRequest = {
-        id: "REQ" + Date.now(),
-        date: new Date().toLocaleString('zh-CN'),
-        status: "pending",
-        warehouseId: "WH003",
-        items: [
-            { name: "高端商务笔记本", quantity: 5, unitPrice: 6999.00 },
-            { name: "全自动咖啡机", quantity: 2, unitPrice: 2599.00 }
-        ]
-    };
-    
-    supplyRequests.unshift(newRequest);
-    displayRequests();
-    updateStatistics();
-    updateNotificationBadge();
-    showNotification('收到新的供应请求！', 'info');
-}
-
-// 5秒后模拟一个新请求（仅用于演示）
-setTimeout(() => {
-    simulateNewRequest();
-}, 5000);

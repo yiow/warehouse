@@ -80,12 +80,39 @@
         </div>
 
         <!-- 供应请求标签页 -->
+
+        <div id="products-tab" class="tab-content active">
+            </div>
+
         <div id="requests-tab" class="tab-content">
-            <h1 class="page-title">供应请求</h1>
-            <div class="requests-container" id="requestsContainer">
-                <!-- 供应请求将通过JavaScript动态生成 -->
+            <div class="content-header">
+                <h3>待处理的供应请求</h3>
+                </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>请求ID</th>
+                            <th>商品编号</th>
+                            <th>商品名称</th>
+                            <th>请求数量</th>
+                            <th>匹配价格</th>
+                            <th>状态</th>
+                            <th>请求时间</th>
+                            <th>操作</th> </tr>
+                    </thead>
+                    <tbody id="supplyRequestsTableBody">
+                        </tbody>
+                </table>
+            </div>
+            <div class="empty-state" id="noRequestsMessage" style="display: none;">
+                <p>暂无新的供应请求。</p>
             </div>
         </div>
+        <div id="statistics-tab" class="tab-content">
+            </div>
+
+
 
         <!-- 统计概览标签页 -->
         <div id="statistics-tab" class="tab-content">
