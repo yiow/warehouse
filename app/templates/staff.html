@@ -232,7 +232,6 @@
                     </div>
                 </div>
                 
-                <!-- 库存流水 -->
                 <div class="section" id="inventory">
                     <h2 class="section-title">出入库流水</h2>
                     <div class="btn-group">
@@ -252,59 +251,17 @@
                     </div>
 
                     <div class="table-container">
-                        <table>
-                            <thead>
+                        <table id="inventory-table"> <thead>
                                 <tr>
-                                    <th>流水号</th>
-                                    <th>时间</th>
-                                    <th>类型</th>
-                                    <th>产品名称</th>
-                                    <th>规格型号</th>
-                                    <th>数量</th>
-                                    <th>单价</th>
-                                    <th>总价</th>
-                                    <th>操作人</th>
-                                    <th>备注</th>
+                                    <th>商品ID</th>
+                                    <th>商品名称</th>
+                                    <th>当前库存</th>
+                                    <th>总入库量</th>
+                                    <th>总出库量</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>IN202505260001</td>
-                                    <td>2025-05-26 10:30</td>
-                                    <td><span style="color: green;">入库</span></td>
-                                    <td>苹果手机</td>
-                                    <td>iPhone 15 Pro</td>
-                                    <td>50</td>
-                                    <td>¥8,999</td>
-                                    <td>¥449,950</td>
-                                    <td>李四</td>
-                                    <td>供应商交货</td>
-                                </tr>
-                                <tr>
-                                    <td>OUT202505260002</td>
-                                    <td>2025-05-26 09:15</td>
-                                    <td><span style="color: red;">出库</span></td>
-                                    <td>洗衣粉</td>
-                                    <td>2kg装</td>
-                                    <td>30</td>
-                                    <td>¥25</td>
-                                    <td>¥750</td>
-                                    <td>王五</td>
-                                    <td>客户订单</td>
-                                </tr>
-                                <tr>
-                                    <td>IN202505250003</td>
-                                    <td>2025-05-25 16:45</td>
-                                    <td><span style="color: green;">入库</span></td>
-                                    <td>运动鞋</td>
-                                    <td>Nike Air Max</td>
-                                    <td>100</td>
-                                    <td>¥599</td>
-                                    <td>¥59,900</td>
-                                    <td>赵六</td>
-                                    <td>新品到货</td>
-                                </tr>
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                 </div>

@@ -108,3 +108,17 @@ def edit_employee(staff_num, data):
         g.db.rollback()
         print(f"Error editing employee: {e}")
         return jsonify({'error': str(e)}), 500
+    
+def get_inventory_summary():
+    """
+    从数据库获取库存流水信息。
+    """
+    try:
+        with g.db.cursor(pymysql.cursors.DictCursor) as cursor:
+            sql = "SELECT goods_id, goods_name, current_stock, total_in, total_out FROM vw_warehouse_inventory_summary"
+            cursor.execute(sql)
+            inventory_summary = cursor.fetchall()
+            return jsonify(inventory_summary), 200
+    except Exception as e:
+        print(f"Error fetching inventory summary: {e}")
+        return jsonify({'error': str(e)}), 500

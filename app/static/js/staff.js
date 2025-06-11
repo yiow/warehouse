@@ -37,6 +37,8 @@ function showSection(sectionId) {
         fetchEmployees();
     }else if (sectionId === 'suppliers') { // 新增这部分
         fetchSuppliers(); // 调用加载供应商数据的函数
+    }else if (sectionId === 'inventory') {
+        fetchInventorySummary(); // Load inventory data
     }
     // 修改结束
 }
@@ -453,6 +455,31 @@ async function deleteRow(staffNum) {
     }
 }
 // 修改结束
+//获取库存流水
+async function fetchInventorySummary() {
+    try {
+        const response = await fetch('/staff/inventory_summary');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const inventoryData = await response.json();
+        const tbody = document.querySelector('#inventory-table tbody'); // Make sure your HTML table has this ID
+        tbody.innerHTML = ''; // Clear existing content
+
+        inventoryData.forEach(item => {
+            const row = tbody.insertRow();
+            row.insertCell().textContent = item.goods_id;
+            row.insertCell().textContent = item.goods_name;
+            row.insertCell().textContent = item.current_stock;
+            row.insertCell().textContent = item.total_in;
+            row.insertCell().textContent = item.total_out;
+            // Add more cells as needed for other columns from your view
+        });
+    } catch (error) {
+        console.error('获取库存流水数据失败:', error);
+        alert('获取库存流水数据失败，请稍后再试。');
+    }
+}
 
 // 动态更新统计数据
 function updateStats() {
