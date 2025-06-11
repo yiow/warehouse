@@ -56,60 +56,22 @@
             <div class="content-area">
                 <!-- 仪表盘 -->
                 <div class="section active" id="dashboard">
-                    <h2 class="section-title">系统概览</h2>
-                    <div class="stats-grid">
+                    <h2 class="section-title">仪表盘</h2>
+                    <div class="stats-cards">
                         <div class="stat-card">
-                            <div class="stat-number">156</div>
-                            <div class="stat-label">总员工数</div>
-                        </div>
+                            <h3>总客户数</h3>
+                            <p id="total-customers">加载中...</p> </div>
                         <div class="stat-card">
-                            <div class="stat-number">43</div>
-                            <div class="stat-label">供应商数量</div>
-                        </div>
+                            <h3>总员工数</h3>
+                            <p id="total-employees">加载中...</p> </div>
                         <div class="stat-card">
-                            <div class="stat-number">289</div>
-                            <div class="stat-label">客户数量</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">12</div>
-                            <div class="stat-label">库存预警</div>
-                        </div>
+                            <h3>总供应商数</h3>
+                            <p id="total-suppliers">加载中...</p> </div>
+                        <div class="stat-card alert-card">
+                            <h3>预警商品数</h3>
+                            <p id="alert-items-count">加载中...</p> </div>
                     </div>
-                    
-                    <h3>最近活动</h3>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>时间</th>
-                                    <th>操作类型</th>
-                                    <th>操作人</th>
-                                    <th>详情</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>2025-05-26 10:30</td>
-                                    <td>入库</td>
-                                    <td>李四</td>
-                                    <td>电子产品入库 50件</td>
-                                </tr>
-                                <tr>
-                                    <td>2025-05-26 09:15</td>
-                                    <td>出库</td>
-                                    <td>王五</td>
-                                    <td>日用品出库 30件</td>
-                                </tr>
-                                <tr>
-                                    <td>2025-05-25 16:45</td>
-                                    <td>新增客户</td>
-                                    <td>张三</td>
-                                    <td>新增客户：上海贸易公司</td>
-                                </tr>
-                            </tbody>
-                        </table>
                     </div>
-                </div>
 
                 <!-- 员工管理 -->
                 <div class="section" id="employees">
@@ -270,58 +232,24 @@
                 <div class="section" id="alerts">
                     <h2 class="section-title">库存预警报表</h2>
                     <div class="btn-group">
-                        <button class="btn" onclick="refreshAlerts()">🔄 刷新预警</button>
-                        <button class="btn" onclick="exportAlerts()">📥 导出报表</button>
+                        <button class="btn" onclick="fetchAlerts()">🔄 刷新预警</button> <button class="btn" onclick="exportAlerts()">📥 导出报表</button>
                         <button class="btn" onclick="sendAlert()">📧 发送预警通知</button>
                     </div>
-
-                    <div class="alert alert-warning">
-                        <strong>⚠️ 注意：</strong> 当前有 12 个商品库存不足，需要及时补货！
-                    </div>
-
-                    <div class="alert alert-danger">
-                        <strong>🚨 紧急：</strong> 有 3 个商品库存严重不足，可能影响正常销售！
-                    </div>
-
                     <div class="table-container">
-                        <table>
-                            <thead>
+                        <table id="alerts-table"> <thead>
                                 <tr>
                                     <th>商品编号</th>
                                     <th>商品名称</th>
-                                    <th>规格型号</th>
                                     <th>当前库存</th>
-                                    <th>安全库存</th>
+                                    <th>最低库存</th>
+                                    <th>库存差距</th>
                                     <th>预警级别</th>
-                                    <th>建议补货量</th>
-                                    <th>供应商</th>
+                                    <th>预警时间</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr style="background-color: #ffebee;">
-                                    <td>P001</td>
-                                    <td>苹果手机</td>
-                                    <td>iPhone 15</td>
-                                    <td>5</td>
-                                    <td>20</td>
-                                    <td><span style="color: red; font-weight: bold;">紧急</span></td>
-                                    <td>75</td>
-                                    <td>广州服装贸易</td>
-                                    <td><button class="btn btn-edit">立即补货</button></td>
-                                </tr>
-                                <tr style="background-color: #fff3e0;">
-                                    <td>P004</td>
-                                    <td>笔记本电脑</td>
-                                    <td>ThinkPad X1</td>
-                                    <td>12</td>
-                                    <td>20</td>
-                                    <td><span style="color: orange; font-weight: bold;">警告</span></td>
-                                    <td>30</td>
-                                    <td>北京电子科技</td>
-                                    <td><button class="btn btn-edit">安排补货</button></td>
-                                </tr>
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                 </div>

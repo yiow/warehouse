@@ -35,10 +35,14 @@ function showSection(sectionId) {
     // 修改开始：当切换到员工管理页面时，加载员工数据
     if (sectionId === 'employees') {
         fetchEmployees();
-    }else if (sectionId === 'suppliers') { // 新增这部分
+    }else if (sectionId === 'suppliers') { 
         fetchSuppliers(); // 调用加载供应商数据的函数
     }else if (sectionId === 'inventory') {
         fetchInventorySummary(); // Load inventory data
+    }else if (sectionId === 'alerts') { 
+        fetchAlerts(); // 调用加载库存预警数据的函数
+    } else if (sectionId === 'dashboard') { 
+        fetchDashboardStats(); // 调用加载仪表盘统计数据的函数
     }
     // 修改结束
 }
@@ -127,6 +131,40 @@ function openModal(modalId) {
 function closeModal(modalId) {
     document.getElementById(modalId).style.display = 'none';
 }
+
+// 仪表盘统计功能
+async function fetchDashboardStats() {
+    try {
+        const response = await fetch('/staff/dashboard_stats');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const stats = await response.json();
+
+        document.getElementById('total-customers').textContent = stats.total_customers;
+        document.getElementById('total-employees').textContent = stats.total_employees;
+        document.getElementById('total-suppliers').textContent = stats.total_suppliers;
+        document.getElementById('alert-items-count').textContent = stats.alert_items_count;
+
+        // 如果预警商品数大于0，可以给预警卡片添加一个视觉提示
+        const alertCard = document.querySelector('.stat-card.alert-card');
+        if (stats.alert_items_count > 0) {
+            alertCard.classList.add('has-alerts'); // 添加一个 CSS 类
+        } else {
+            alertCard.classList.remove('has-alerts');
+        }
+
+    } catch (error) {
+        console.error('获取仪表盘统计数据失败:', error);
+        alert('获取仪表盘统计数据失败，请稍后再试。');
+    }
+}
+
+// 确保页面加载时就调用一次 fetchDashboardStats
+document.addEventListener('DOMContentLoaded', () => {
+    // 假设初始显示的是仪表盘
+    showSection('dashboard'); 
+});
 
 //获取供应商数据
 async function fetchSuppliers() {
@@ -479,6 +517,67 @@ async function fetchInventorySummary() {
         console.error('获取库存流水数据失败:', error);
         alert('获取库存流水数据失败，请稍后再试。');
     }
+}
+
+// 库存预警功能
+async function fetchAlerts() {
+    try {
+        const response = await fetch('/staff/alerts'); // 调用后端预警数据路由
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const alerts = await response.json();
+        const tbody = document.querySelector('#alerts-table tbody');
+        tbody.innerHTML = ''; // 清空现有内容
+
+        alerts.forEach(alert => {
+            const row = tbody.insertRow();
+            row.insertCell().textContent = alert.Good_Num;
+            row.insertCell().textContent = alert.Good_Name;
+            row.insertCell().textContent = alert.Current_Quantity;
+            row.insertCell().textContent = alert.Min_Quantity;
+            row.insertCell().textContent = alert.Quantity_Gap;
+
+            const alertLevelCell = row.insertCell();
+            const alertLevelSpan = document.createElement('span');
+            alertLevelSpan.textContent = alert.Alert_Level;
+            // 根据预警级别设置样式
+            if (alert.Alert_Level === 'CRITICAL') {
+                alertLevelSpan.style.color = 'red';
+                alertLevelSpan.style.fontWeight = 'bold';
+                row.style.backgroundColor = '#ffebee'; // 浅红色背景
+            } else if (alert.Alert_Level === 'DANGER') {
+                alertLevelSpan.style.color = 'darkorange';
+                alertLevelSpan.style.fontWeight = 'bold';
+                row.style.backgroundColor = '#fff3e0'; // 浅橙色背景
+            } else if (alert.Alert_Level === 'WARNING') {
+                alertLevelSpan.style.color = 'orange';
+                alertLevelSpan.style.fontWeight = 'bold';
+                row.style.backgroundColor = '#fff8e1'; // 浅黄色背景
+            } else if (alert.Alert_Level === 'LOW') {
+                alertLevelSpan.style.color = 'blue'; // 可以是蓝色或其他表示较低级别的颜色
+                row.style.backgroundColor = '#e3f2fd'; // 浅蓝色背景
+            }
+            alertLevelCell.appendChild(alertLevelSpan);
+
+            row.insertCell().textContent = new Date(alert.Alert_Time).toLocaleString(); // 格式化时间
+
+            const actionsCell = row.insertCell();
+            const restockButton = document.createElement('button');
+            restockButton.className = 'btn btn-edit'; // 可以重用编辑按钮的样式
+            restockButton.textContent = '立即处理'; // 或者“立即补货”
+            restockButton.onclick = () => alert(`处理商品: ${alert.Good_Name}`); // 示例操作
+            actionsCell.appendChild(restockButton);
+        });
+    } catch (error) {
+        console.error('获取库存预警数据失败:', error);
+        alert('获取库存预警数据失败，请稍后再试。');
+    }
+}
+
+function refreshAlerts() {
+    alert('正在刷新预警信息...');
+    fetchAlerts(); // 调用 fetchAlerts 重新加载数据
 }
 
 // 动态更新统计数据

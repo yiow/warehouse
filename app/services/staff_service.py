@@ -122,3 +122,62 @@ def get_inventory_summary():
     except Exception as e:
         print(f"Error fetching inventory summary: {e}")
         return jsonify({'error': str(e)}), 500
+    
+def get_goods_alerts():
+    """
+    从数据库视图 view_goods_alert 获取库存预警信息。
+    """
+    try:
+        with g.db.cursor(pymysql.cursors.DictCursor) as cursor:
+            sql = """
+                SELECT 
+                    Good_Num,
+                    Good_Name,
+                    Current_Quantity,
+                    Min_Quantity,
+                    Quantity_Gap,
+                    Alert_Level,
+                    Alert_Time
+                FROM view_goods_alert
+            """
+            cursor.execute(sql)
+            alerts = cursor.fetchall()
+            return jsonify(alerts), 200
+    except Exception as e:
+        print(f"Error fetching goods alerts: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+def get_dashboard_stats():
+    """
+    从数据库获取仪表盘所需的统计数据。
+    包括客户数量、员工数量、供应商数量和预警商品数量。
+    """
+    stats = {
+        'total_customers': 0,
+        'total_employees': 0,
+        'total_suppliers': 0,
+        'alert_items_count': 0
+    }
+    try:
+        with g.db.cursor(pymysql.cursors.DictCursor) as cursor:
+            # 获取客户数量
+            cursor.execute("SELECT COUNT(*) AS count FROM customers")
+            stats['total_customers'] = cursor.fetchone()['count']
+
+            # 获取员工数量
+            cursor.execute("SELECT COUNT(*) AS count FROM staff")
+            stats['total_employees'] = cursor.fetchone()['count']
+
+            # 获取供应商数量
+            cursor.execute("SELECT COUNT(*) AS count FROM suppliers")
+            stats['total_suppliers'] = cursor.fetchone()['count']
+
+            # 获取预警商品数量（从 view_goods_alert 视图）
+            cursor.execute("SELECT COUNT(*) AS count FROM view_goods_alert WHERE Alert_Level != 'NORMAL'") # 只统计非NORMAL级别的预警
+            stats['alert_items_count'] = cursor.fetchone()['count']
+
+        return jsonify(stats), 200
+    except Exception as e:
+        print(f"Error fetching dashboard stats: {e}")
+        return jsonify({'error': str(e)}), 500

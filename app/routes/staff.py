@@ -5,7 +5,9 @@ from app.services.staff_service import (
     add_employee,
     delete_employee,
     edit_employee,
-    get_inventory_summary)
+    get_inventory_summary,
+    get_goods_alerts,
+    get_dashboard_stats)
 from app.services.supplier_service import (
     get_all_suppliers, 
     delete_supplier, 
@@ -21,6 +23,11 @@ def customer():
         'userid':session['user_id']
     }
     return render_template('staff.html',user=user_info)
+
+#获取主页的数据
+@staff_bp.route('/staff/dashboard_stats', methods=['GET'])
+def get_dashboard_stats_route():
+    return get_dashboard_stats()
 
 # 修改开始：获取所有员工的路由
 @staff_bp.route('/staff/employees', methods=['GET'])
@@ -59,3 +66,7 @@ def delete_supplier_route(supplier_num):
 @staff_bp.route('/staff/inventory_summary', methods=['GET'])
 def get_inventory_summary_route():
     return get_inventory_summary()
+
+@staff_bp.route('/staff/alerts', methods=['GET'])
+def get_alerts_route():
+    return get_goods_alerts()
