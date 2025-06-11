@@ -25,9 +25,6 @@
                         <a class="nav-link" onclick="showSection('suppliers')">🏢 供应商管理</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" onclick="showSection('customers')">👤 客户管理</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" onclick="showSection('inventory')">📦 库存流水</a>
                     </li>
                     <li class="nav-item">
@@ -187,146 +184,54 @@
                 <div class="section" id="suppliers">
                     <h2 class="section-title">供应商管理</h2>
                     <div class="btn-group">
-                        <button class="btn" onclick="addSupplier()">+ 添加供应商</button>
                         <button class="btn" onclick="exportSuppliers()">📥 导出数据</button>
                     </div>
-                    
+
                     <div class="search-box">
                         <input type="text" class="search-input" placeholder="搜索供应商名称...">
                         <button class="btn">🔍 搜索</button>
                     </div>
 
                     <div class="table-container">
-                        <table>
+                        <table id="suppliers-table">
                             <thead>
                                 <tr>
                                     <th>供应商编号</th>
-                                    <th>公司名称</th>
-                                    <th>联系人</th>
+                                    <th>供应商名称</th>
                                     <th>联系电话</th>
-                                    <th>主营产品</th>
-                                    <th>合作状态</th>
-                                    <th>信用等级</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>S001</td>
-                                    <td>北京电子科技有限公司</td>
-                                    <td>刘经理</td>
-                                    <td>010-12345678</td>
-                                    <td>电子元器件</td>
-                                    <td>合作中</td>
-                                    <td>A级</td>
-                                    <td>
-                                        <button class="btn btn-edit">编辑</button>
-                                        <button class="btn btn-delete">删除</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>S002</td>
-                                    <td>上海日用品制造厂</td>
-                                    <td>陈总</td>
-                                    <td>021-87654321</td>
-                                    <td>日用品</td>
-                                    <td>合作中</td>
-                                    <td>B级</td>
-                                    <td>
-                                        <button class="btn btn-edit">编辑</button>
-                                        <button class="btn btn-delete">删除</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>S003</td>
-                                    <td>广州服装贸易公司</td>
-                                    <td>王总</td>
-                                    <td>020-11223344</td>
-                                    <td>服装纺织</td>
-                                    <td>合作中</td>
-                                    <td>A级</td>
-                                    <td>
-                                        <button class="btn btn-edit">编辑</button>
-                                        <button class="btn btn-delete">删除</button>
-                                    </td>
-                                </tr>
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- 客户管理 -->
-                <div class="section" id="customers">
-                    <h2 class="section-title">客户管理</h2>
-                    <div class="btn-group">
-                        <button class="btn" onclick="addCustomer()">+ 添加客户</button>
-                        <button class="btn" onclick="exportCustomers()">📥 导出数据</button>
-                    </div>
-                    
-                    <div class="search-box">
-                        <input type="text" class="search-input" placeholder="搜索客户名称...">
-                        <button class="btn">🔍 搜索</button>
-                    </div>
-
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>客户编号</th>
-                                    <th>客户名称</th>
-                                    <th>联系人</th>
-                                    <th>联系电话</th>
-                                    <th>客户类型</th>
-                                    <th>信用额度</th>
-                                    <th>状态</th>
-                                    <th>操作</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>C001</td>
-                                    <td>上海贸易有限公司</td>
-                                    <td>张经理</td>
-                                    <td>021-98765432</td>
-                                    <td>企业客户</td>
-                                    <td>100万</td>
-                                    <td>活跃</td>
-                                    <td>
-                                        <button class="btn btn-edit">编辑</button>
-                                        <button class="btn btn-delete">删除</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>C002</td>
-                                    <td>深圳零售连锁店</td>
-                                    <td>李总</td>
-                                    <td>0755-12345678</td>
-                                    <td>零售客户</td>
-                                    <td>50万</td>
-                                    <td>活跃</td>
-                                    <td>
-                                        <button class="btn btn-edit">编辑</button>
-                                        <button class="btn btn-delete">删除</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>C003</td>
-                                    <td>北京电商平台</td>
-                                    <td>王主管</td>
-                                    <td>010-87654321</td>
-                                    <td>电商客户</td>
-                                    <td>200万</td>
-                                    <td>活跃</td>
-                                    <td>
-                                        <button class="btn btn-edit">编辑</button>
-                                        <button class="btn btn-delete">删除</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div id="editSupplierModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close-button" onclick="closeModal('editSupplierModal')">&times;</span>
+                        <h3>编辑供应商信息</h3>
+                        <form id="editSupplierForm">
+                            <div class="form-group">
+                                <label for="editSupplierNum" class="form-label">供应商编号:</label>
+                                <input type="text" id="editSupplierNum" name="Supplier_Num" class="form-input" readonly> </div>
+                            <div class="form-group">
+                                <label for="editSupplierName" class="form-label">供应商名称:</label>
+                                <input type="text" id="editSupplierName" name="Supplier_UserName" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editSupplierPhone" class="form-label">联系电话:</label>
+                                <input type="text" id="editSupplierPhone" name="Supplier_Phone" class="form-input" required>
+                            </div>
+                            <div class="btn-group">
+                                <button type="submit" class="btn">保存</button>
+                                <button type="button" class="btn" style="background: #6c757d;" onclick="closeModal('editSupplierModal')">取消</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-
+                
                 <!-- 库存流水 -->
                 <div class="section" id="inventory">
                     <h2 class="section-title">出入库流水</h2>

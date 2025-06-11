@@ -27,7 +27,6 @@ function showSection(sectionId) {
         'dashboard': '仪表盘',
         'employees': '员工管理',
         'suppliers': '供应商管理', 
-        'customers': '客户管理',
         'inventory': '库存流水',
         'alerts': '库存预警',
         'supply-list': '供货清单'
@@ -36,6 +35,8 @@ function showSection(sectionId) {
     // 修改开始：当切换到员工管理页面时，加载员工数据
     if (sectionId === 'employees') {
         fetchEmployees();
+    }else if (sectionId === 'suppliers') { // 新增这部分
+        fetchSuppliers(); // 调用加载供应商数据的函数
     }
     // 修改结束
 }
@@ -47,12 +48,11 @@ function logout() {
 }
 
 // 修改开始：打开添加员工模态框
-//员工管理功能
 function openAddEmployeeModal() {
     document.getElementById('addEmployeeForm').reset(); // 清空表单
     document.getElementById('addEmployeeModal').style.display = 'flex'; // 使用 flex 布局居中
 }
-// 修改结束
+
 
 function exportEmployees() {
     alert('正在导出员工数据...');
@@ -125,7 +125,96 @@ function openModal(modalId) {
 function closeModal(modalId) {
     document.getElementById(modalId).style.display = 'none';
 }
+
+//获取供应商数据
+async function fetchSuppliers() {
+    try {
+        const response = await fetch('/staff/suppliers');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const suppliers = await response.json();
+        const tbody = document.querySelector('#suppliers-table tbody');
+        tbody.innerHTML = ''; // 清空现有内容
+
+        suppliers.forEach(supplier => {
+            const row = tbody.insertRow();
+            row.dataset.supplierNum = supplier.Supplier_Num; // 存储供应商编号
+
+            row.insertCell().textContent = supplier.Supplier_Num;
+            row.insertCell().textContent = supplier.Supplier_UserName;
+            row.insertCell().textContent = supplier.Supplier_Phone;
+
+            const actionsCell = row.insertCell();
+
+            // 编辑按钮
+            const editButton = document.createElement('button');
+            editButton.className = 'btn btn-edit'; // 可以自定义 CSS 样式
+            editButton.textContent = '编辑';
+            editButton.onclick = () => openEditSupplierModal(supplier); // 传递整个供应商对象
+            actionsCell.appendChild(editButton);
+
+            // 删除按钮
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'btn btn-delete';
+            deleteButton.textContent = '删除';
+            deleteButton.onclick = () => deleteSupplier(supplier.Supplier_Num);
+            actionsCell.appendChild(deleteButton);
+        });
+    } catch (error) {
+        console.error('获取供应商数据失败:', error);
+        alert('获取供应商数据失败，请稍后再试。');
+    }
+}
+
+// 修改开始：打开编辑供应商模态框
+function openEditSupplierModal(supplier) {
+    document.getElementById('editSupplierNum').value = supplier.Supplier_Num;
+    document.getElementById('editSupplierName').value = supplier.Supplier_UserName;
+    document.getElementById('editSupplierPhone').value = supplier.Supplier_Phone;
+    document.getElementById('editSupplierModal').style.display = 'flex';
+}
 // 修改结束
+
+// 修改开始：提交编辑供应商表单
+async function submitEditSupplierForm(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const supplierNum = document.getElementById('editSupplierNum').value; // 获取供应商编号
+    const formData = new FormData(form);
+    const data = {};
+    for (let [key, value] of formData.entries()) {
+        data[key] = value;
+    }
+    // 删除 Supplier_Num，因为我们在 URL 中传递它，并且数据库通常不更新主键
+    delete data.Supplier_Num;
+
+    try {
+        const response = await fetch(`/staff/edit_supplier/${supplierNum}`, {
+            method: 'PUT', // 使用PUT方法进行更新
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert(result.message);
+            closeModal('editSupplierModal');
+            fetchSuppliers(); // 重新加载供应商列表
+        } else {
+            alert('编辑供应商失败: ' + result.error);
+        }
+    } catch (error) {
+        console.error('编辑供应商请求失败:', error);
+        alert('编辑供应商失败，请检查网络连接。');
+    }
+}
+
+
 // 修改开始：获取员工数据并填充表格
 async function fetchEmployees() {
     try {
@@ -164,8 +253,32 @@ async function fetchEmployees() {
         alert('获取员工数据失败，请稍后再试。');
     }
 }
-// 修改结束
-// 修改开始：添加员工表单提交
+
+
+// 修改开始：删除供应商函数
+async function deleteSupplier(supplierNum) {
+    if (confirm(`确定要删除编号为 ${supplierNum} 的供应商吗？`)) {
+        try {
+            const response = await fetch(`/staff/delete_supplier/${supplierNum}`, { // 向后端发送DELETE请求
+                method: 'DELETE'
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert(result.message);
+                fetchSuppliers(); // 重新加载供应商列表
+            } else {
+                alert('删除失败: ' + result.error);
+            }
+        } catch (error) {
+            console.error('删除供应商请求失败:', error);
+            alert('删除供应商失败，请检查网络连接。');
+        }
+    }
+}
+
+// 表单提交
 document.addEventListener('DOMContentLoaded', () => { // 确保在 DOM 加载后绑定事件
     const addEmployeeForm = document.getElementById('addEmployeeForm');
     if (addEmployeeForm) {
@@ -177,6 +290,11 @@ document.addEventListener('DOMContentLoaded', () => { // 确保在 DOM 加载后
         editEmployeeForm.addEventListener('submit', submitEditEmployeeForm);
     }
 
+    const editSupplierForm = document.getElementById('editSupplierForm'); 
+    if (editSupplierForm) {
+        editSupplierForm.addEventListener('submit', submitEditSupplierForm);
+    }
+
     // 页面加载完成后的初始化操作
     console.log('仓库管理系统已启动');
     
@@ -184,6 +302,7 @@ document.addEventListener('DOMContentLoaded', () => { // 确保在 DOM 加载后
     // fetchEmployees(); // 可以在 showSection('employees') 中调用
 });
 
+//员工表单提交
 async function submitAddEmployeeForm(event) {
     event.preventDefault(); // 阻止表单默认提交行为
 
@@ -365,10 +484,6 @@ document.addEventListener('keydown', function(e) {
             case '3':
                 e.preventDefault();
                 showSection('suppliers');
-                break;
-            case '4':
-                e.preventDefault();
-                showSection('customers');
                 break;
             case '5':
                 e.preventDefault();

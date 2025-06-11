@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify, g,session
 # 修改开始
 from app.services.staff_service import get_all_employees,add_employee,delete_employee,edit_employee
+from app.services.supplier_service import get_all_suppliers, delete_supplier, edit_supplier 
 # 修改结束
 staff_bp = Blueprint('staff', __name__)
 
@@ -32,3 +33,16 @@ def delete_employee_route(staff_num):
 def edit_employee_route(staff_num):
     data = request.get_json()
     return edit_employee(staff_num, data)
+
+@staff_bp.route('/staff/suppliers', methods=['GET']) # 获取所有供应商
+def get_suppliers_route():
+    return get_all_suppliers()
+
+@staff_bp.route('/staff/edit_supplier/<int:supplier_num>', methods=['PUT']) # 新增：编辑供应商路由
+def edit_supplier_route(supplier_num):
+    data = request.get_json()
+    return edit_supplier(supplier_num, data)
+
+@staff_bp.route('/staff/delete_supplier/<int:supplier_num>', methods=['DELETE']) # 删除供应商
+def delete_supplier_route(supplier_num):
+    return delete_supplier(supplier_num)
