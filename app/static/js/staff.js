@@ -29,7 +29,8 @@ function showSection(sectionId) {
         'suppliers': '供应商管理', 
         'inventory': '库存流水',
         'alerts': '库存预警',
-        'supply-list': '供货清单'
+        'supply-list': '供货清单',
+        'supplier-price-list': '供应商价格表'
     };
     document.querySelector('.header-title').textContent = titles[sectionId] || '管理员控制台';
     // 修改开始：当切换到员工管理页面时，加载员工数据
@@ -45,6 +46,8 @@ function showSection(sectionId) {
         fetchDashboardStats(); // 调用加载仪表盘统计数据的函数
     }else if (sectionId === 'supply-list'){
         fetchPurchaseOrders();
+    }else if (sectionId === 'supplier-price-list') { // <-- 新增
+        fetchSupplierPrices(); // 加载供应商价格表数据
     }
     // 修改结束
 }
@@ -53,6 +56,40 @@ function showSection(sectionId) {
 function logout() {
     alert('即将返回登陆界面');
     window.location.href='/logout';
+}
+
+// 新增：获取并显示供应商商品价格表数据
+async function fetchSupplierPrices() {
+    const supplierPriceTableBody = document.getElementById('supplierPriceTableBody');
+    supplierPriceTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">加载中...</td></tr>'; // 显示加载状态
+
+    try {
+        const response = await fetch('/staff/supplier_prices'); // 调用新的后端路由
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || '获取供应商价格数据失败');
+        }
+
+        supplierPriceTableBody.innerHTML = ''; // 清空现有内容
+        if (data.length === 0) {
+            supplierPriceTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">暂无供应商商品价格数据。</td></tr>';
+            return;
+        }
+
+        data.forEach(item => {
+            const row = supplierPriceTableBody.insertRow();
+            row.insertCell().textContent = item.Good_Num;
+            row.insertCell().textContent = item.Good_Name;
+            row.insertCell().textContent = item.Supplier_Num;
+            row.insertCell().textContent = item.Supplier_UserName;
+            row.insertCell().textContent = parseFloat(item.Good_Price).toFixed(2); // 格式化价格
+        });
+    } catch (error) {
+        console.error('获取供应商价格数据失败:', error);
+        supplierPriceTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">加载供应商价格数据失败: ${error.message}</td></tr>`;
+        alert('获取供应商价格数据失败，请稍后再试。');
+    }
 }
 
 // 修改开始：打开添加员工模态框

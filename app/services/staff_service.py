@@ -234,3 +234,24 @@ def get_all_request_records():
     except Exception as e:
         print(f"Error fetching request records: {e}")
         return jsonify({'error': str(e)}), 500
+
+
+# 新增：获取供应商商品价格视图数据
+def get_supplier_prices_view():
+    """
+    从数据库获取供应商商品价格视图的数据。
+    """
+    try:
+        with g.db.cursor(pymysql.cursors.DictCursor) as cursor:
+            # 假设您的视图名为 `view_supplier_prices`
+            sql = """
+                SELECT Good_Num, Good_Name, Supplier_Num, Supplier_UserName, Good_Price
+                FROM supplier_goods_pricing_analysis
+                ORDER BY Good_Name, Supplier_UserName
+            """
+            cursor.execute(sql)
+            supplier_prices = cursor.fetchall()
+            return jsonify(supplier_prices), 200
+    except Exception as e:
+        print(f"Error fetching supplier prices view: {e}")
+        return jsonify({'error': str(e)}), 500

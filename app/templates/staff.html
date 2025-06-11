@@ -33,6 +33,9 @@
                     <li class="nav-item">
                         <a class="nav-link" onclick="showSection('supply-list')">📋 供货清单</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="showSection('supplier-price-list')">💰 供应商价格表</a>
+                    </li>
                 </ul>
             </nav>
         </div>
@@ -253,7 +256,28 @@
                         </table>
                     </div>
                 </div>
-
+                <div id="supplier-price-list" class="section">
+                    <div class="section-header">
+                        <h2>💰 供应商价格表</h2>
+                        <button class="btn btn-primary" onclick="fetchSupplierPrices()">刷新数据</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>商品编号</th>
+                                    <th>商品名称</th>
+                                    <th>供应商编号</th>
+                                    <th>供应商名称</th>
+                                    <th>供应价格</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supplierPriceTableBody">
+                                <tr><td colspan="5" style="text-align: center;">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
                 <!-- 供货清单 -->
                 <div class="section" id="supply-list">
                     <h2>供货清单 - 订购记录</h2>

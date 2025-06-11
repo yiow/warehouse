@@ -9,7 +9,8 @@ from app.services.staff_service import (
     get_goods_alerts,
     get_dashboard_stats,
     add_request_record,
-    get_all_request_records)
+    get_all_request_records,
+    get_supplier_prices_view)
 from app.services.supplier_service import (
     get_all_suppliers, 
     delete_supplier, 
@@ -83,3 +84,8 @@ def add_request_record_route():
 @staff_bp.route('/staff/request_records', methods=['GET'])
 def get_request_records_route():
     return get_all_request_records()
+
+# 新增：获取供应商商品价格视图的路由
+@staff_bp.route('/staff/supplier_prices', methods=['GET'])
+def get_supplier_prices_view_route():
+    return get_supplier_prices_view()
