@@ -256,108 +256,23 @@
 
                 <!-- 供货清单 -->
                 <div class="section" id="supply-list">
-                    <h2 class="section-title">供货清单管理</h2>
-                    <div class="btn-group">
-                        <button class="btn" onclick="createSupplyList()">+ 创建清单</button>
-                        <button class="btn" onclick="sendSupplyList()">📧 发送清单</button>
-                        <button class="btn" onclick="exportSupplyList()">📥 导出清单</button>
-                    </div>
-
-                    <div class="search-box">
-                        <select class="search-input" style="max-width: 200px;">
-                            <option>选择供应商</option>
-                            <option>北京电子科技有限公司</option>
-                            <option>上海日用品制造厂</option>
-                            <option>广州服装贸易公司</option>
-                        </select>
-                        <input type="date" class="search-input" style="max-width: 200px;">
-                        <button class="btn">🔍 筛选</button>
-                    </div>
-
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>清单编号</th>
-                                    <th>供应商</th>
-                                    <th>创建时间</th>
-                                    <th>产品数量</th>
-                                    <th>总金额</th>
-                                    <th>状态</th>
-                                    <th>发送状态</th>
-                                    <th>操作</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>SL202505260001</td>
-                                    <td>北京电子科技有限公司</td>
-                                    <td>2025-05-26 11:00</td>
-                                    <td>5种商品</td>
-                                    <td>¥1,250,000</td>
-                                    <td><span style="color: green;">已确认</span></td>
-                                    <td><span style="color: blue;">已发送</span></td>
-                                    <td>
-                                        <button class="btn btn-edit">查看详情</button>
-                                        <button class="btn">重新发送</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>SL202505250002</td>
-                                    <td>上海日用品制造厂</td>
-                                    <td>2025-05-25 14:30</td>
-                                    <td>8种商品</td>
-                                    <td>¥85,000</td>
-                                    <td><span style="color: orange;">待确认</span></td>
-                                    <td><span style="color: blue;">已发送</span></td>
-                                    <td>
-                                        <button class="btn btn-edit">查看详情</button>
-                                        <button class="btn">催促回复</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>SL202505240003</td>
-                                    <td>广州服装贸易公司</td>
-                                    <td>2025-05-24 09:15</td>
-                                    <td>12种商品</td>
-                                    <td>¥456,000</td>
-                                    <td><span style="color: red;">草稿</span></td>
-                                    <td><span style="color: gray;">未发送</span></td>
-                                    <td>
-                                        <button class="btn btn-edit">编辑</button>
-                                        <button class="btn">发送</button>
-                                    </td>
-                                </tr>
+                    <h2>供货清单 - 订购记录</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>请求ID</th>
+                                <th>商品编号</th>
+                                <th>商品名称</th>
+                                <th>请求数量</th>
+                                <th>首选供应商ID</th>
+                                <th>状态</th>
+                                <th>匹配价格</th>
+                                <th>请求时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="purchaseOrderTableBody">
                             </tbody>
-                        </table>
-                    </div>
-
-                    <!-- 创建清单表单 -->
-                    <div id="supply-form" style="display: none; margin-top: 30px; padding: 20px; border: 2px solid #eee; border-radius: 10px;">
-                        <h3>创建供货清单</h3>
-                        <div class="form-group">
-                            <label class="form-label">选择供应商</label>
-                            <select class="form-input">
-                                <option>请选择供应商</option>
-                                <option>北京电子科技有限公司</option>
-                                <option>上海日用品制造厂</option>
-                                <option>广州服装贸易公司</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">清单名称</label>
-                            <input type="text" class="form-input" placeholder="输入清单名称">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">需求说明</label>
-                            <textarea class="form-input" rows="4" placeholder="详细描述采购需求..."></textarea>
-                        </div>
-                        <div class="btn-group">
-                            <button class="btn">保存草稿</button>
-                            <button class="btn">发送清单</button>
-                            <button class="btn" style="background: #6c757d;" onclick="hideSupplyForm()">取消</button>
-                        </div>
-                    </div>
+                    </table>
                 </div>
             </div>
         </div>
@@ -429,6 +344,28 @@
                 <div class="btn-group">
                     <button type="submit" class="btn">保存</button>
                     <button type="button" class="btn" style="background: #6c757d;" onclick="closeModal('editEmployeeModal')">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="orderQuantityModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('orderQuantityModal')">&times;</span>
+            <h2>订购商品</h2>
+            <form id="orderQuantityForm">
+                <input type="hidden" id="orderGoodNum" name="Good_Num">
+                <div class="form-group">
+                    <label for="orderGoodName" class="form-label">商品名称:</label>
+                    <input type="text" id="orderGoodName" class="form-input" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="requestQuantity" class="form-label">订购数量:</label>
+                    <input type="number" id="requestQuantity" name="Request_Quantity" class="form-input" min="1" required>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn">提交订单</button>
+                    <button type="button" class="btn" style="background: #6c757d;" onclick="closeModal('orderQuantityModal')">取消</button>
                 </div>
             </form>
         </div>

@@ -43,6 +43,8 @@ function showSection(sectionId) {
         fetchAlerts(); // 调用加载库存预警数据的函数
     } else if (sectionId === 'dashboard') { 
         fetchDashboardStats(); // 调用加载仪表盘统计数据的函数
+    }else if (sectionId === 'supply-list'){
+        fetchPurchaseOrders();
     }
     // 修改结束
 }
@@ -566,7 +568,7 @@ async function fetchAlerts() {
             const restockButton = document.createElement('button');
             restockButton.className = 'btn btn-edit'; // 可以重用编辑按钮的样式
             restockButton.textContent = '立即处理'; // 或者“立即补货”
-            restockButton.onclick = () => alert(`处理商品: ${alert.Good_Name}`); // 示例操作
+            restockButton.onclick = () => openOrderQuantityModal(alert.Good_Num, alert.Good_Name);
             actionsCell.appendChild(restockButton);
         });
     } catch (error) {
@@ -574,6 +576,93 @@ async function fetchAlerts() {
         alert('获取库存预警数据失败，请稍后再试。');
     }
 }
+
+// 打开订购数量模态框
+function openOrderQuantityModal(goodNum, goodName) {
+    document.getElementById('orderGoodNum').value = goodNum;
+    document.getElementById('orderGoodName').value = goodName;
+    document.getElementById('requestQuantity').value = ''; // 清空上次的输入
+    openModal('orderQuantityModal');
+}
+
+// 提交订单
+document.getElementById('orderQuantityForm').addEventListener('submit', async function(event) {
+    event.preventDefault(); // 阻止表单默认提交行为
+
+    const goodNum = document.getElementById('orderGoodNum').value;
+    const requestQuantity = document.getElementById('requestQuantity').value;
+
+    if (!requestQuantity || requestQuantity <= 0) {
+        alert('订购数量必须大于0！');
+        return;
+    }
+
+    const orderData = {
+        Good_Num: goodNum,
+        Request_Quantity: parseInt(requestQuantity)
+    };
+
+    try {
+        const response = await fetch('/staff/add_request_record', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orderData)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        alert(result.message); // 显示成功消息
+
+        closeModal('orderQuantityModal'); // 关闭模态框
+        fetchAlerts(); // 刷新预警列表
+    } catch (error) {
+        console.error('提交订单失败:', error);
+        alert('提交订单失败：' + error.message);
+    }
+});
+
+
+async function fetchPurchaseOrders() {
+    console.log('正在获取订购记录数据...');
+    try {
+        const response = await fetch('/staff/request_records');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const records = await response.json();
+        const purchaseOrderTableBody = document.getElementById('purchaseOrderTableBody');
+        purchaseOrderTableBody.innerHTML = ''; // 清空现有内容
+
+        if (records.length === 0) {
+            purchaseOrderTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">暂无订购记录。</td></tr>';
+            return;
+        }
+
+        records.forEach(record => {
+            const row = purchaseOrderTableBody.insertRow();
+            row.insertCell().textContent = record.Request_ID;
+            row.insertCell().textContent = record.Good_Num;
+            row.insertCell().textContent = record.Good_Name || '未知商品'; // 如果Good_Name为空，显示“未知商品”
+            row.insertCell().textContent = record.Request_Quantity;
+            row.insertCell().textContent = record.Preferred_Supplier_ID || 'N/A'; // 如果没有匹配供应商
+            row.insertCell().textContent = record.Status;
+            row.insertCell().textContent = record.Matched_Price ? record.Matched_Price: 'N/A'; // 格式化价格
+            row.insertCell().textContent = new Date(record.Request_Time).toLocaleString(); // 格式化时间
+        });
+    } catch (error) {
+        console.error('获取订购记录数据失败:', error);
+        // 可以添加一个用户友好的错误提示
+        const purchaseOrderTableBody = document.getElementById('purchaseOrderTableBody');
+        purchaseOrderTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: red;">加载订购记录失败。</td></tr>';
+    }
+}
+
 
 function refreshAlerts() {
     alert('正在刷新预警信息...');

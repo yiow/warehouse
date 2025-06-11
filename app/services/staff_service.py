@@ -181,3 +181,56 @@ def get_dashboard_stats():
     except Exception as e:
         print(f"Error fetching dashboard stats: {e}")
         return jsonify({'error': str(e)}), 500
+    
+def add_request_record(data):
+    """
+    向数据库添加新的请求记录（订单）。
+    data 字典应包含 Good_Num, Request_Quantity。
+    """
+    good_num = data.get('Good_Num')
+    request_quantity = data.get('Request_Quantity')
+
+    if not all([good_num, request_quantity]) or request_quantity <= 0:
+        return jsonify({'error': '缺少必要的订购信息或订购数量无效'}), 400
+
+    try:
+        with g.db.cursor() as cursor:
+            # 插入请求记录，触发器会自动处理 Preferred_Supplier_ID, Status, Matched_Price
+            sql = """
+                INSERT INTO Request_Record (Good_Num, Request_Quantity, Status)
+                VALUES (%s, %s, %s)
+            """
+            # 初始状态可以设为 'Pending' 或其他，触发器会将其更新为 'Matched' 或 'Unmatched'
+            cursor.execute(sql, (good_num, request_quantity, 'Pending'))
+            g.db.commit() # 提交事务
+
+            return jsonify({'message': '订单已成功提交！'}), 201
+    except Exception as e:
+        print(f"Error adding request record: {e}")
+        return jsonify({'error': str(e)}), 500
+    
+def get_all_request_records():
+    """
+    从数据库获取所有订购请求记录，并关联商品名称。
+    """
+    try:
+        with g.db.cursor(pymysql.cursors.DictCursor) as cursor:
+            sql = """
+                SELECT
+                    rr.Request_ID,
+                    rr.Good_Num,
+                    g.Good_Name,
+                    rr.Request_Quantity,
+                    rr.Preferred_Supplier_ID,
+                    rr.Status,
+                    rr.Matched_Price
+                FROM request_record rr
+                JOIN goods g ON rr.Good_Num = g.Good_Num
+                ORDER BY rr.Request_ID DESC
+            """
+            cursor.execute(sql)
+            records = cursor.fetchall()
+            return jsonify(records), 200
+    except Exception as e:
+        print(f"Error fetching request records: {e}")
+        return jsonify({'error': str(e)}), 500

@@ -7,7 +7,9 @@ from app.services.staff_service import (
     edit_employee,
     get_inventory_summary,
     get_goods_alerts,
-    get_dashboard_stats)
+    get_dashboard_stats,
+    add_request_record,
+    get_all_request_records)
 from app.services.supplier_service import (
     get_all_suppliers, 
     delete_supplier, 
@@ -70,3 +72,14 @@ def get_inventory_summary_route():
 @staff_bp.route('/staff/alerts', methods=['GET'])
 def get_alerts_route():
     return get_goods_alerts()
+
+# 添加请求记录采购的路由
+@staff_bp.route('/staff/add_request_record', methods=['POST'])
+def add_request_record_route():
+    data = request.get_json()
+    return add_request_record(data)
+
+# 获取所有订购请求记录的路由
+@staff_bp.route('/staff/request_records', methods=['GET'])
+def get_request_records_route():
+    return get_all_request_records()
