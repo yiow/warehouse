@@ -190,24 +190,54 @@ def create_return_order_service(user_id, order_number):
         g.db.rollback()
         return False
 
+# 修改 get_customer_profile_service 函数
 def get_customer_profile_service(user_id):
+    """
+    从数据库获取指定客户的个人信息，包括基本信息和订单/退货分析数据。
+    """
     try:
-        with g.db.cursor() as cursor:
-            sql = """
-                SELECT Customer_Address AS address, Customer_Phone AS phone, Customer_Vip AS vip
+        with g.db.cursor() as cursor: 
+            # 1. 查询客户基本信息
+            sql_profile = """
+                SELECT Customer_Num AS customer_num, Customer_UserName AS username,
+                       Customer_Address AS address, Customer_Phone AS phone, Customer_Vip AS vip
                 FROM customers
                 WHERE Customer_Num = %s
             """
-            cursor.execute(sql, (user_id,))
-            profile_info = cursor.fetchone() # 获取一行数据
+            cursor.execute(sql_profile, (user_id,))
+            profile_info = cursor.fetchone()
 
-            if profile_info:
-                return True, profile_info
+            if not profile_info:
+                return False, None # 客户不存在
+
+            # 2. 查询客户的订单/退货分析数据
+            sql_analysis = """
+                SELECT
+                    Total_Orders,
+                    Total_Discounted_Amount,
+                    Total_Returns,
+                    Top_Goods
+                FROM customer_order_return_analysis
+                WHERE Customer_Num = %s
+            """
+            cursor.execute(sql_analysis, (user_id,))
+            analysis_data = cursor.fetchone()
+
+            if analysis_data:
+                # 合并两个查询结果
+                profile_info.update(analysis_data)
             else:
-                return False, None
+                # 如果没有分析数据（例如新客户），则设置默认值
+                profile_info['Total_Orders'] = 0
+                profile_info['Total_Discounted_Amount'] = 0.00
+                profile_info['Total_Returns'] = 0
+                profile_info['Top_Goods'] = '暂无'
+
+            return True, profile_info
     except Exception as e:
         print(f"获取客户个人信息失败: {e}")
         return False, None
+
     
 # 新增：更新用户个人信息服务
 def update_customer_profile_service(user_id, address, phone, vip):

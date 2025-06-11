@@ -2,6 +2,30 @@
 let products = [];
 // 购物车数据
 let cart = [];
+
+// 辅助函数：打开模态框 (确保这段代码在文件顶部)
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+    } else {
+        console.error(`Error: Modal with ID '${modalId}' not found.`);
+    }
+}
+
+// 辅助函数：关闭模态框 (确保这段代码在文件顶部)
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    } else {
+        console.error(`Error: Modal with ID '${modalId}' not found.`);
+    }
+}
 document.addEventListener('DOMContentLoaded', async function () {
     try {
         // 1. 加载商品
@@ -539,37 +563,64 @@ let profileModal = null;
 
 // 打开个人信息模态框
 async function openProfileModal() {
-    if (!profileModal) {
-        profileModal = document.getElementById('profileModal');
-    }
-
-    const profileInfoBody = profileModal.querySelector('#profileInfo');
-    profileInfoBody.innerHTML = '<div class="loading">加载中...</div>';
+    const profileModal = document.getElementById('profileModal');
+    const profileInfoBody = document.getElementById('profileInfo');
+    profileInfoBody.innerHTML = '<div class="loading">加载中...</div>'; // 显示加载状态
+    openModal('profileModal'); // 确保模态框显示
 
     try {
         const response = await fetch('/profile');
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || '获取个人信息失败');
-        }
-        const profile = await response.json();
+        const data = await response.json();
 
-        // 默认显示个人信息
-        renderProfile(profile);
-        profileModal.classList.add('active');
+        if (!response.ok) {
+            throw new Error(data.error || '获取个人信息失败');
+        }
+
+        // 保存当前个人信息，以便在编辑模式下恢复或取消时使用
+        profileInfoBody.dataset.currentProfile = JSON.stringify(data);
+
+        // 渲染显示模式
+        profileInfoBody.innerHTML = `
+            <div class="profile-display-mode">
+                <p><strong>用户名:</strong> <span id="displayUsername">${data.username}</span></p>
+                <p><strong>会员状态:</strong> <span id="displayVip">${data.vip ? '是' : '否'}</span></p>
+                <p><strong>地址:</strong> <span id="displayAddress">${data.address || '未设置'}</span></p>
+                <p><strong>电话:</strong> <span id="displayPhone">${data.phone || '未设置'}</span></p>
+                <hr style="margin: 15px 0;">
+                <h4>🛒 订单统计:</h4>
+                <p><strong>总订单数:</strong> <span id="displayTotalOrders">${data.Total_Orders !== undefined ? data.Total_Orders : 'N/A'}</span></p>
+                <p><strong>累计消费金额:</strong> ¥<span id="displayTotalDiscountedAmount">${data.Total_Discounted_Amount !== undefined ? parseFloat(data.Total_Discounted_Amount).toFixed(2) : '0.00'}</span></p>
+                <p><strong>总退货次数:</strong> <span id="displayTotalReturns">${data.Total_Returns !== undefined ? data.Total_Returns : 'N/A'}</span></p>
+                <p><strong>最常购买商品:</strong> <span id="displayTopGoods">${data.Top_Goods || '暂无'}</span></p>
+                <div class="btn-group" style="margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="enableEditProfile()">编辑</button>
+                </div>
+            </div>
+            <div class="profile-edit-mode" style="display:none;">
+                <div class="form-group">
+                    <label for="editAddress">地址:</label>
+                    <input type="text" id="editAddress" value="${data.address || ''}" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="editPhone">电话:</label>
+                    <input type="text" id="editPhone" value="${data.phone || ''}" class="form-input">
+                </div>
+                <div class="btn-group" style="margin-top: 20px;">
+                    <button class="btn btn-success" onclick="saveProfile()">保存</button>
+                    <button class="btn btn-secondary" onclick="cancelEditProfile()">取消</button>
+                </div>
+            </div>
+        `;
     } catch (error) {
         console.error('加载个人信息失败:', error);
-        profileInfoBody.innerHTML = `<div class="error">加载失败: ${error.message}</div>`;
-        profileModal.classList.add('active');
+        profileInfoBody.innerHTML = `<div class="error-message" style="color: red;">加载个人信息失败: ${error.message}</div>`;
+        // 可以选择在这里关闭模态框或者显示一个重试按钮
     }
 }
 
-// 关闭个人信息模态框
+// 辅助函数：关闭个人信息模态框
 function closeProfileModal() {
-    if (profileModal) {
-        profileModal.classList.remove('active');
-        profileModal.querySelector('#profileInfo').innerHTML = '<div class="loading">加载中...</div>';
-    }
+    closeModal('profileModal');
 }
 
 // 渲染个人信息数据 (VIP 不可编辑)
@@ -617,31 +668,23 @@ function renderProfile(profile) {
     profileInfoBody.dataset.currentProfile = JSON.stringify(profile);
 }
 
-// 进入编辑模式
-function editProfile() {
+// 启用编辑模式
+function enableEditProfile() {
     const profileInfoBody = document.getElementById('profileInfo');
     profileInfoBody.querySelector('.profile-display-mode').style.display = 'none';
     profileInfoBody.querySelector('.profile-edit-mode').style.display = 'block';
 
-    // 确保输入框的值与当前显示的值同步 (尽管 renderProfile 已经初始化了)
+    // 从 dataset 中获取当前数据并填充到编辑字段
     const currentProfile = JSON.parse(profileInfoBody.dataset.currentProfile);
     document.getElementById('editAddress').value = currentProfile.address || '';
     document.getElementById('editPhone').value = currentProfile.phone || '';
-    // VIP 状态现在是不可编辑的，所以无需设置输入框
-    // document.getElementById('editVip').checked = currentProfile.is_vip; // <--- 移除这一行
 }
 
 // 保存个人信息
 async function saveProfile() {
+    const profileInfoBody = document.getElementById('profileInfo');
     const address = document.getElementById('editAddress').value;
     const phone = document.getElementById('editPhone').value;
-    // const is_vip = document.getElementById('editVip').checked; // <--- 移除这一行，VIP 不再由前端发送
-
-    // 简单验证 (可根据需求扩展)
-    if (!address || !phone) {
-        alert('地址和电话不能为空！');
-        return;
-    }
 
     try {
         const response = await fetch('/profile', {
@@ -649,7 +692,6 @@ async function saveProfile() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            // body: JSON.stringify({ address, phone, is_vip }) // <--- 修改这里，不再包含 is_vip
             body: JSON.stringify({ address, phone })
         });
 
@@ -675,14 +717,7 @@ function cancelEditProfile() {
     const profileInfoBody = document.getElementById('profileInfo');
     profileInfoBody.querySelector('.profile-display-mode').style.display = 'block';
     profileInfoBody.querySelector('.profile-edit-mode').style.display = 'none';
-
-    // 恢复显示模式下的值（可选，因为 openProfileModal() 会重新渲染）
-    const currentProfile = JSON.parse(profileInfoBody.dataset.currentProfile);
-    document.getElementById('displayAddress').textContent = currentProfile.address || '未设置';
-    document.getElementById('displayPhone').textContent = currentProfile.phone || '未设置';
-    document.getElementById('displayVip').textContent = currentProfile.is_vip ? '是' : '否';
 }
-
 // 退出登录
 function logout() {
     alert('即将返回登陆界面');
