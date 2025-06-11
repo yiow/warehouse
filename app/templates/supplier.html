@@ -31,38 +31,51 @@
     <main class="main-container">
         <!-- 商品管理标签页 -->
         <div id="products-tab" class="tab-content active">
-            <h1 class="page-title">商品管理</h1>
-            
-            <div class="products-header">
-                <div class="search-filter">
-                    <div class="search-box">
-                        <input type="text" id="productSearch" placeholder="搜索商品..." onkeyup="searchProducts()">
-                    </div>
-                </div>
-                <button class="add-product-btn" onclick="showAddProductModal()">
-                    ➕ 添加商品
-                </button>
+            <h2 class="section-title">我的供货商品</h2>
+            <div class="btn-group mb-3">
+                <button class="btn btn-primary" onclick="openAddGoodModal()">➕ 添加供货商品</button>
+                <button class="btn btn-secondary" onclick="fetchSupplierGoods()">🔄 刷新商品列表</button>
             </div>
-
-            <div class="products-table">
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>商品图片</th>
-                                <th>商品名称</th>
-                                <th>分类</th>
-                                <th>价格</th>
-                                <th>库存</th>
-                                <th>状态</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="productsTableBody">
-                            <!-- 商品列表将通过JavaScript动态生成 -->
+            <div class="table-container">
+                <table id="supplier-products-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>商品编号</th>
+                            <th>商品名称</th>
+                            <th>商品描述</th>
+                            <th>供应商价格 (元)</th>
+                            <th>销售价格 (元)</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                         </tbody>
-                    </table>
+                </table>
+                <div id="no-supplier-products" class="empty-state" style="display: none;">
+                    <p>您还没有添加任何供货商品。点击“添加供货商品”按钮开始。</p>
                 </div>
+            </div>
+        </div>
+
+        <div id="addEditGoodModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="closeModal('addEditGoodModal')">&times;</span>
+                <h3 id="addEditGoodModalTitle">添加供货商品</h3>
+                <form id="addEditGoodForm">
+                    <input type="hidden" id="modalGoodNum" name="Good_Num">
+                    <div class="form-group">
+                        <label for="goodSelect">选择仓库商品:</label>
+                        <select id="goodSelect" class="form-input" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierGoodPrice">您的供货价格 (元):</label>
+                        <input type="number" id="supplierGoodPrice" name="Good_Price" step="0.01" class="form-input" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('addEditGoodModal')">取消</button>
+                        <button type="submit" class="btn btn-primary" id="saveGoodButton">保存</button>
+                    </div>
+                </form>
             </div>
         </div>
 

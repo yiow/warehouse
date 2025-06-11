@@ -1,91 +1,41 @@
 
 // 供应商商品数据
-let supplierProducts = [
-    {
-        id: 1,
-        name: "高端商务笔记本",
-        category: "电子产品",
-        description: "Intel i7处理器，16GB内存，512GB SSD",
-        price: 6999.00,
-        stock: 25,
-        image: "💻"
-    },
-    {
-        id: 2,
-        name: "人体工学无线鼠标",
-        category: "电子产品",
-        description: "2.4GHz无线连接，DPI可调，人体工学设计",
-        price: 129.90,
-        stock: 80,
-        image: "🖱️"
-    },
-    {
-        id: 3,
-        name: "多功能激光打印机",
-        category: "办公用品",
-        description: "打印、复印、扫描三合一，支持双面打印",
-        price: 1899.00,
-        stock: 15,
-        image: "🖨️"
-    },
-    {
-        id: 4,
-        name: "A4文件夹套装",
-        category: "办公用品",
-        description: "PP材质，多种颜色，办公整理必备",
-        price: 15.50,
-        stock: 200,
-        image: "📁"
-    },
-    {
-        id: 5,
-        name: "全自动咖啡机",
-        category: "家居用品",
-        description: "意式浓缩，多种口味选择，一键操作",
-        price: 2599.00,
-        stock: 8,
-        image: "☕"
-    }
-];
+let supplierProducts = [];
 
 // 供应请求数据
-let supplyRequests = [
-    {
-        id: "REQ20241122001",
-        date: "2024-11-22 10:30",
-        status: "pending",
-        warehouseId: "WH001",
-        items: [
-            { name: "高端商务笔记本", quantity: 10, unitPrice: 6999.00 },
-            { name: "人体工学无线鼠标", quantity: 20, unitPrice: 129.90 }
-        ]
-    },
-    {
-        id: "REQ20241122002",
-        date: "2024-11-22 14:15",
-        status: "pending",
-        warehouseId: "WH002",
-        items: [
-            { name: "多功能激光打印机", quantity: 5, unitPrice: 1899.00 },
-            { name: "A4文件夹套装", quantity: 50, unitPrice: 15.50 }
-        ]
-    },
-    {
-        id: "REQ20241121001",
-        date: "2024-11-21 16:45",
-        status: "accepted",
-        warehouseId: "WH001",
-        items: [
-            { name: "全自动咖啡机", quantity: 3, unitPrice: 2599.00 }
-        ]
-    }
-];
+let supplyRequests = [];
 
 let currentEditingProduct = null;
 
+// 辅助函数：打开模态框
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'flex'; // 使用 'flex' 来居中模态框，与 CSS 保持一致
+        modal.classList.add('active');
+    } else {
+        console.error(`Error: Modal with ID '${modalId}' not found.`);
+    }
+}
+
+// 辅助函数：关闭模态框
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        // 移除 active 类来触发淡出效果
+        modal.classList.remove('active');
+        // 等待过渡完成（0.3秒），然后将 display 设置为 none
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300); // 这里的 300ms 应该与 CSS 中的 transition 时间一致
+    } else {
+        console.error(`Error: Modal with ID '${modalId}' not found.`);
+    }
+}
+
 // 页面加载时初始化
 document.addEventListener('DOMContentLoaded', function() {
-    displayProducts();
+    fetchSupplierGoods(); 
     displayRequests();
     updateStatistics();
     updateNotificationBadge();
@@ -103,7 +53,7 @@ function switchTab(tabName) {
     
     // 更新数据显示
     if (tabName === 'products') {
-        displayProducts();
+        fetchSupplierGoods(); // 加载供应商商品
     } else if (tabName === 'requests') {
         displayRequests();
     } else if (tabName === 'statistics') {
@@ -111,65 +61,191 @@ function switchTab(tabName) {
     }
 }
 
-// 显示商品列表
-function displayProducts(productList = supplierProducts) {
-    const tbody = document.getElementById('productsTableBody');
+// 获取并显示供应商供货商品
+async function fetchSupplierGoods() {
+    const tableBody = document.querySelector('#supplier-products-table tbody');
+    tableBody.innerHTML = ''; // 清空现有内容
+    const noProductsMessage = document.getElementById('no-supplier-products');
+
+    try {
+        const response = await fetch('/supplier/my_goods'); // Fetch from backend
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const goods = await response.json();
+
+        if (goods.length === 0) {
+            noProductsMessage.style.display = 'block'; // Show empty state
+            return;
+        } else {
+            noProductsMessage.style.display = 'none'; // Hide empty state
+        }
+
+        // Populate table with fetched goods
+        goods.forEach(good => {
+            const row = tableBody.insertRow();
+            row.insertCell().textContent = good.Good_Num;
+            row.insertCell().textContent = good.Good_Name;
+            row.insertCell().textContent = good.Description;
+
+            // 关键修改：在使用前将价格字符串转换为浮点数
+            const supplierPrice = parseFloat(good.Supplier_Price);
+            const retailPrice = parseFloat(good.Retail_Price);
+
+            // 修正后的代码：检查转换后的价格是否为有效数字
+            row.insertCell().textContent = !isNaN(supplierPrice) ? supplierPrice.toFixed(2) : 'N/A'; // 供应商价格
+            row.insertCell().textContent = !isNaN(retailPrice) ? retailPrice.toFixed(2) : 'N/A'; // 销售价格
+
+            const actionsCell = row.insertCell();
+            const editButton = document.createElement('button');
+            editButton.className = 'btn btn-edit';
+            editButton.textContent = '编辑价格';
+            editButton.onclick = () => openEditGoodModal(good); // Call edit modal
+            actionsCell.appendChild(editButton);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'btn btn-delete';
+            deleteButton.textContent = '删除';
+            deleteButton.onclick = () => deleteSupplierGood(good.Good_Num); // Call delete function
+            actionsCell.appendChild(deleteButton);
+        });
+    } catch (error) {
+        console.error('获取供应商商品失败:', error);
+        alert('获取供应商商品失败，请稍后再试。');
+    }
+}
+
+// 打开添加供货商品模态框
+async function openAddGoodModal() {
+    document.getElementById('addEditGoodModalTitle').textContent = '添加供货商品';
+    document.getElementById('saveGoodButton').textContent = '添加';
+    document.getElementById('addEditGoodForm').reset();
+    document.getElementById('goodSelect').value = ''; // 清空选择
+    document.getElementById('goodSelect').disabled = false; // 添加时可选择
+
+    await populateWarehouseGoodsSelect(); // 填充仓库商品下拉列表
+    openModal('addEditGoodModal'); // <--- 这一行调用了 openModal
+}
+
+
+// 打开编辑供货商品模态框
+async function openEditGoodModal(good) {
+    document.getElementById('addEditGoodModalTitle').textContent = '编辑供货商品';
+    document.getElementById('saveGoodButton').textContent = '保存';
+    document.getElementById('addEditGoodForm').reset();
+
+    // 填充 Good_Num
+    document.getElementById('modalGoodNum').value = good.Good_Num;
     
-    if (productList.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7">
-                    <div class="empty-state">
-                        <div style="font-size: 4em; margin-bottom: 1rem;">📦</div>
-                        <p>暂无商品数据</p>
-                        <p>点击"添加商品"开始添加您的商品</p>
-                    </div>
-                </td>
-            </tr>
-        `;
+    // 填充供应商价格
+    document.getElementById('supplierGoodPrice').value = good.Supplier_Price;
+
+    // 填充并禁用商品选择，因为是编辑现有商品
+    await populateWarehouseGoodsSelect(good.Good_Num);
+    document.getElementById('goodSelect').value = good.Good_Num;
+    document.getElementById('goodSelect').disabled = true; // 编辑时不可修改商品
+
+    openModal('addEditGoodModal');
+}
+
+// 填充仓库商品下拉列表
+async function populateWarehouseGoodsSelect(selectedGoodNum = null) {
+    const goodSelect = document.getElementById('goodSelect');
+    goodSelect.innerHTML = '<option value="">请选择商品</option>'; // 初始选项
+
+    try {
+        const response = await fetch('/supplier/warehouse_goods');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const warehouseGoods = await response.json();
+
+        warehouseGoods.forEach(good => {
+            const option = document.createElement('option');
+            option.value = good.Good_Num;
+            option.textContent = `${good.Good_Name} (${good.Good_Num})`;
+            if (selectedGoodNum && good.Good_Num === selectedGoodNum) {
+                option.selected = true;
+            }
+            goodSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('获取仓库商品失败:', error);
+        alert('获取仓库商品列表失败，请稍后再试。');
+    }
+}
+
+// 处理添加/编辑供货商品表单提交
+document.getElementById('addEditGoodForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const goodNum = document.getElementById('goodSelect').value;
+    const supplierGoodPrice = document.getElementById('supplierGoodPrice').value;
+    const isEditing = document.getElementById('addEditGoodModalTitle').textContent.includes('编辑');
+
+    const data = {
+        Good_Num: parseInt(goodNum),
+        Good_Price: parseFloat(supplierGoodPrice)
+    };
+
+    let url = '';
+    let method = '';
+
+    if (isEditing) {
+        url = `/supplier/edit_my_good/${goodNum}`;
+        method = 'PUT';
+    } else {
+        url = '/supplier/add_my_good';
+        method = 'POST';
+    }
+
+    try {
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+            alert(result.message);
+            closeModal('addEditGoodModal');
+            fetchSupplierGoods(); // 刷新列表
+        } else {
+            alert('操作失败: ' + (result.error || '未知错误'));
+        }
+    } catch (error) {
+        console.error('保存供货商品失败:', error);
+        alert('保存供货商品失败，请稍后再试。');
+    }
+});
+
+// 删除供货商品
+async function deleteSupplierGood(goodNum) {
+    if (!confirm('确定要删除此供货商品吗？')) {
         return;
     }
-    
-    tbody.innerHTML = productList.map(product => {
-        let stockStatus = '';
-        let stockClass = '';
-        
-        if (product.stock === 0) {
-            stockStatus = '缺货';
-            stockClass = 'stock-out';
-        } else if (product.stock < 20) {
-            stockStatus = '库存偏低';
-            stockClass = 'stock-low';
+
+    try {
+        const response = await fetch(`/supplier/delete_my_good/${goodNum}`, {
+            method: 'DELETE'
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+            alert(result.message);
+            fetchSupplierGoods(); // 刷新列表
         } else {
-            stockStatus = '库存充足';
-            stockClass = 'stock-sufficient';
+            alert('删除失败: ' + (result.error || '未知错误'));
         }
-        
-        return `
-            <tr>
-                <td>
-                    <div class="product-image">${product.image}</div>
-                </td>
-                <td>
-                    <div class="product-name">${product.name}</div>
-                    <div style="color: #718096; font-size: 0.875rem;">${product.description}</div>
-                </td>
-                <td>${product.category}</td>
-                <td class="product-price">¥${product.price.toFixed(2)}</td>
-                <td>${product.stock}</td>
-                <td>
-                    <span class="stock-status ${stockClass}">${stockStatus}</span>
-                </td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="btn btn-edit" onclick="editProduct(${product.id})">编辑</button>
-                        <button class="btn btn-delete" onclick="deleteProduct(${product.id})">删除</button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    }).join('');
+    } catch (error) {
+        console.error('删除供货商品失败:', error);
+        alert('删除供货商品失败，请稍后再试。');
+    }
 }
+
 
 // 搜索商品
 function searchProducts() {
@@ -182,83 +258,8 @@ function searchProducts() {
     displayProducts(filteredProducts);
 }
 
-// 显示添加商品模态框
-function showAddProductModal() {
-    currentEditingProduct = null;
-    document.getElementById('productModalTitle').textContent = '添加商品';
-    document.getElementById('productForm').reset();
-    document.getElementById('productModal').classList.add('active');
-}
 
-// 编辑商品
-function editProduct(productId) {
-    const product = supplierProducts.find(p => p.id === productId);
-    if (!product) return;
 
-    currentEditingProduct = product;
-    document.getElementById('productModalTitle').textContent = '编辑商品';
-    
-    // 填充表单数据
-    document.getElementById('productName').value = product.name;
-    document.getElementById('productCategory').value = product.category;
-    document.getElementById('productDescription').value = product.description;
-    document.getElementById('productPrice').value = product.price;
-    document.getElementById('productStock').value = product.stock;
-    document.getElementById('productImage').value = product.image;
-    
-    document.getElementById('productModal').classList.add('active');
-}
-
-// 删除商品
-function deleteProduct(productId) {
-    const product = supplierProducts.find(p => p.id === productId);
-    if (!product) return;
-
-    if (confirm(`确定要删除商品"${product.name}"吗？此操作不可撤销。`)) {
-        supplierProducts = supplierProducts.filter(p => p.id !== productId);
-        displayProducts();
-        updateStatistics();
-        
-        // 显示删除成功提示
-        showNotification('商品删除成功', 'success');
-    }
-}
-
-// 关闭商品模态框
-function closeProductModal() {
-    document.getElementById('productModal').classList.remove('active');
-    currentEditingProduct = null;
-}
-
-// 处理商品表单提交
-document.getElementById('productForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const productData = {
-        name: formData.get('name'),
-        category: formData.get('category'),
-        description: formData.get('description'),
-        price: parseFloat(formData.get('price')),
-        stock: parseInt(formData.get('stock')),
-        image: formData.get('image')
-    };
-
-    if (currentEditingProduct) {
-        // 编辑现有商品
-        Object.assign(currentEditingProduct, productData);
-        showNotification('商品更新成功', 'success');
-    } else {
-        // 添加新商品
-        productData.id = Date.now(); // 简单的ID生成
-        supplierProducts.push(productData);
-        showNotification('商品添加成功', 'success');
-    }
-
-    displayProducts();
-    updateStatistics();
-    closeProductModal();
-});
 
 // 显示供应请求
 function displayRequests() {
@@ -479,7 +480,6 @@ window.addEventListener('load', function() {
         if (data.products) supplierProducts = data.products;
         if (data.requests) supplyRequests = data.requests;
         
-        displayProducts();
         displayRequests();
         updateStatistics();
         updateNotificationBadge();
@@ -505,20 +505,6 @@ function simulateNewRequest() {
     updateNotificationBadge();
     showNotification('收到新的供应请求！', 'info');
 }
-
-// 添加键盘快捷键支持
-document.addEventListener('keydown', function(e) {
-    // Esc键关闭模态框
-    if (e.key === 'Escape') {
-        closeProductModal();
-    }
-    
-    // Ctrl+N 添加新商品
-    if (e.ctrlKey && e.key === 'n') {
-        e.preventDefault();
-        showAddProductModal();
-    }
-});
 
 // 5秒后模拟一个新请求（仅用于演示）
 setTimeout(() => {
